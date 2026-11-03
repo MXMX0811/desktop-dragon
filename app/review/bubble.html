@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+ <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+ <title>龙娘 · 信息气泡</title>
+ <link rel="stylesheet" href="../../assets/shared/subagents/style.css">
+ <link rel="stylesheet" href="bubble.css">
+</head>
+<body>
+<main>
+ <header>
+  <div><p class="eyebrow">DESKTOP DRAGON / INTERACTION STUDY</p><h1>一声回应</h1><p class="intro">点一下看看用量，再点一下，听她说句话。</p></div>
+  <a href="../runtime/index.html">返回状态展示 <span aria-hidden="true">↗</span></a>
+ </header>
+ <div class="notice"><span class="sample-dot"></span>交互样例 · 额度与时间均为示例数据</div>
+ <section class="toolbar" aria-label="预览设置">
+  <label>状态<select id="scene"><option value="standby">陪伴</option><option value="reading">阅读</option><option value="work" selected>工作</option><option value="drawing">绘图动作预览</option><option value="thinking">思考</option></select></label>
+  <label>形态<select id="form"><option value="chibi">Q 版</option><option value="normal">正比</option></select></label>
+  <label>信息<select id="sample"><option value="normal">正常额度</option><option value="low">低额度</option><option value="missing">无用量数据</option></select></label>
+  <div class="toolbar-end"><label class="check"><input id="pin" type="checkbox" checked>固定气泡</label><button id="background" type="button">浅色背景</button></div>
+ </section>
+ <div id="stage-scroll"><section id="stage" class="night" aria-label="人物与信息气泡预览">
+  <div class="stage-label"><span class="live-dot"></span><span id="scale-label">当前桌面尺寸</span></div>
+  <div id="pet" role="button" tabindex="0" aria-label="点击龙娘查看信息或下一句台词"></div>
+  <div id="bubble" class="speech-bubble" role="status" aria-live="polite" hidden><div id="bubble-content"></div></div>
+  <div id="loading">正在准备龙娘…</div>
+  <p class="stage-hint">点击龙娘 · 再次点击切换台词</p>
+ </section></div>
+ <footer>
+  <div><p id="status">准备预览</p><p class="footnote">取消固定：信息停留 6 秒，台词停留 5 秒；收起后再点，重新显示信息。</p></div>
+  <div class="actions"><button id="show-info" type="button" disabled>显示信息</button><button id="next" class="primary" type="button" disabled>点击龙娘</button></div>
+ </footer>
+ <p id="error" role="alert" hidden></p>
+</main>
+<script src="../../assets/vendor/pixi.min.js"></script>
+<script src="../../assets/vendor/pixi-unsafe-eval.min.js"></script>
+<script type="module" src="bubble.js"></script>
+</body>
+</html>
