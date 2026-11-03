@@ -75,4 +75,4 @@ PreCompact PostCompact Stop Interrupt SessionEnd
 
 `.local/`由Git忽略。事件存入`events/`；并发测试写到临时目录并自动清理。`verify-live.mjs <session_id>`只检查实际记录，不生成事件。
 
-macOS真实工具事件、采集开关和单个子代理的独立轮次及双云显隐已经验证。Windows、复杂嵌套归属和长时间常驻开销仍待实测。完整范围见[验证记录](../../docs/codex-hooks-implementation.md)。
+平台限制和接入范围见[钩子实现说明](../../docs/codex-hooks-implementation.md)。

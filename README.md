@@ -2,7 +2,7 @@
 
 面向 macOS、Windows 的桌面龙娘，用分层动画显示已观察到的 Codex 会话、工具和子代理活动。支持点击反馈、拖动、形态切换、左右边缘飞行与扒边，以及右键会话查询。软件只读取状态，人物交互只改变本地表现。
 
-macOS 已验证桌面交互、真实工具事件、采集开关和单个子代理的双云显隐；最新自动测试为 105/105 通过。Windows、多屏、混合缩放和常驻开销尚未实测。完整范围见[架构与验证记录](docs/architecture.md)。
+实现范围和平台限制见[架构说明](docs/architecture.md)。
 
 ## 安装与运行
 
@@ -43,7 +43,7 @@ python3 -m unittest discover -s app/runtime/bridge -p 'test_*.py'
 npm run package
 ```
 
-GitHub Actions 在每次推送和拉取请求运行同一组 Node 与 Python 测试。Python 3 仅用于 JSONL 桥测试及浏览器预览。打包使用锁定版本的 Electron Packager，在 `out/` 生成当前主机平台的应用；macOS arm64 已运行验证，尚未配置签名、公证或安装器。
+GitHub Actions 在每次推送和拉取请求运行同一组 Node 与 Python 测试。Python 3 仅用于 JSONL 桥测试及浏览器预览。打包使用锁定版本的 Electron Packager，在 `out/` 生成当前主机平台的应用；尚未配置签名、公证或安装器。
 
 浏览器动画审阅：
 
@@ -51,7 +51,7 @@ GitHub Actions 在每次推送和拉取请求运行同一组 Node 与 Python 测
 npm run preview
 ```
 
-打开[状态展示](http://127.0.0.1:55888/runtime/index.html)或[动画检查](http://127.0.0.1:55888/runtime/inspect.html)。浏览器审阅用于核对动画，原生窗口、焦点和鼠标穿透需要单独实测。
+打开[状态展示](http://127.0.0.1:55888/runtime/index.html)或[动画检查](http://127.0.0.1:55888/runtime/inspect.html)。浏览器预览用于查看人物动作与状态切换。
 
 ## 模块与设计记录
 

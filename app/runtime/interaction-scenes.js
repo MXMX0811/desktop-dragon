@@ -7,9 +7,8 @@ import {applyReferenceColor} from '../../assets/shared/reference-palette.mjs';
 import {displaySize} from './display-policy.js';
 
 const DRAG_SIZE=displaySize('drag','chibi'),DRAG_EYES=[475,562];
-// Drag texture alpha bounds are x=[17,1014). Use half the visible drag width
-// around the release anchor so takeoff starts close to the screen edge.
-export const DRAG_EDGE_WIDTH=(1014-17)*DRAG_SIZE/REFERENCE_HEIGHT/2;
+// Release-anchor distance from either outer screen edge, in CSS pixels.
+export const DRAG_EDGE_WIDTH=80;
 // Eye anchors are measured in each actual padded canvas, never alpha bounds.
 const eyes={
  'standby:chibi':[695.5,635.5,1414,1414],

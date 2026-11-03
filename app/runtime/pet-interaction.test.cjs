@@ -297,7 +297,7 @@ for(const grabX of [150,250]){
 }
 
 for(const side of ['left','right'])for(const inside of [true,false]){
- test(`release ${inside?'inside':'outside'} the visible drag half-width at the ${side} edge`,async t=>{
+ test(`release ${inside?'inside':'outside'} the 80px drag release zone at the ${side} edge`,async t=>{
   const {DRAG_EDGE_WIDTH}=await import('./interaction-scenes.js');
   const h=await harness(t,{edgeWidth:DRAG_EDGE_WIDTH});
   const distance=DRAG_EDGE_WIDTH+(inside?-.01:.01),x=side==='left'?distance:600-distance;

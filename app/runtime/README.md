@@ -2,7 +2,7 @@
 
 从仓库根目录运行 `python3 tools/preview.py`，打开 http://127.0.0.1:55888/runtime/index.html 。无需安装依赖。
 
-本目录提供浏览器动画演练及桌面共用的状态、交互和动画宿主。Electron桌面入口在`desktop/main/`，真实多会话观察及查询面板在`app/desktop/`使用。当前实现及验证范围见[架构文档](../../docs/architecture.md)。
+本目录提供浏览器动画演练及桌面共用的状态、交互和动画宿主。Electron桌面入口在`desktop/main/`，真实多会话观察及查询面板在`app/desktop/`使用。模块职责与实现范围见[架构文档](../../docs/architecture.md)。
 
 “本地会话”只读取 bridge/session.json；缺少时显示等待接入。仓库没有包含私人会话快照。bridge/codex_stream.py为原有JSONL输入桥，不会自动连接原生客户端。
 

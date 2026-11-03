@@ -3,9 +3,9 @@ import assert from 'node:assert/strict';
 import {areaAt,outsideEdge} from './geometry.js';
 import {DRAG_EDGE_WIDTH} from '../runtime/interaction-scenes.js';
 
-test('both outer edges use the drag silhouette half-width in desktop coordinates',()=>{
+test('both outer edges use the 80px release zone in desktop coordinates',()=>{
  const area={x:-1200,y:100,width:1200,height:800};
- assert.ok(Math.abs(DRAG_EDGE_WIDTH-68.574602)<.000001);
+ assert.equal(DRAG_EDGE_WIDTH,80);
  for(const side of ['left','right']){
   const boundary=side==='left'?area.x+DRAG_EDGE_WIDTH:area.x+area.width-DRAG_EDGE_WIDTH;
   assert.equal(outsideEdge({x:boundary,y:300},area,[area],DRAG_EDGE_WIDTH),side);
