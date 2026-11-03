@@ -4,6 +4,7 @@ import {dualFormScenes} from '../runtime/display-policy.js';
 import {DRAG_EDGE_WIDTH,taskEye,createDrag,createFlight,createPeek} from '../runtime/interaction-scenes.js';
 import {areaAt,outsideEdge,union} from './geometry.js';
 import {SubagentCompanions} from '../../assets/shared/subagents/scene.js';
+import {IdleSleep} from './idle-sleep.js';
 
 const $=id=>document.getElementById(id),bridge=window.dragon;
 const stage=$('stage'),characters=$('characters');
@@ -11,6 +12,13 @@ let companions;
 let layout,areas=[],interaction,presenter,view={scene:'standby',form:'chibi',waiting:false,sleeping:false,suspended:false};
 let eye,frame=0,lastReport='',snapshot=null,following=true,disposed=false;
 let form=localStorage.getItem('dragon.taskForm')==='normal'?'normal':'chibi';
+const idleSleep=new IdleSleep(()=>setView({...view,sleeping:true}));
+
+function syncIdleSleep(){
+ idleSleep.setEligible(Boolean(!disposed&&following&&snapshot&&!snapshot.error&&
+  snapshot.activity.activeCount===0&&view.scene==='standby'&&!view.sleeping&&!view.suspended&&
+  !interaction.active&&!interaction.pointer&&!presenter.busy&&!presenter.hidden&&!document.hidden));
+}
 
 function positionPanel(){
  if($('panel').hidden||!presenter?.current)return;
@@ -64,9 +72,10 @@ function renderPanel(){
 }
 function openPanel(){if(interaction.active)return;$('panel').hidden=false;renderPanel();}
 function touch(count){
+ idleSleep.restart();
  if(count===3&&dualFormScenes.has(view.scene)){changeForm();return;}
  if(count>3)return;
- if(view.sleeping){view={...view,sleeping:false};interaction.setTarget(view);return;}
+ if(view.sleeping){setView({...view,sleeping:false});return;}
  presenter.touch();companions.triggerOrbit();
 }
 function changeForm(){
@@ -75,14 +84,16 @@ function changeForm(){
 }
 function setView(next){
  view={...next,form:dualFormScenes.has(next.scene)?(next.form||form):'chibi'};
- interaction.setTarget(view);scheduleReport();
+ interaction.setTarget(view);syncIdleSleep();scheduleReport();
 }
 function followSnapshot(){
  if(!following||!snapshot)return;
  scheduleReport();
  const activity=snapshot.activity;
- const next={scene:activity.scene,form:dualFormScenes.has(activity.scene)?form:'chibi',waiting:false,sleeping:false,suspended:activity.suspended};
- if(next.scene!==view.scene||next.form!==view.form||next.suspended!==view.suspended||view.sleeping||view.waiting)setView(next);
+ const sleeping=view.sleeping&&activity.scene==='standby'&&activity.activeCount===0&&!snapshot.error&&!activity.suspended;
+ const next={scene:activity.scene,form:dualFormScenes.has(activity.scene)?form:'chibi',waiting:false,sleeping,suspended:activity.suspended};
+ if(next.scene!==view.scene||next.form!==view.form||next.suspended!==view.suspended||next.sleeping!==view.sleeping||view.waiting)setView(next);
+ syncIdleSleep();
 }
 function showError(error){
  $('error').textContent=`动画载入失败：${error.message}`;$('error').hidden=false;
@@ -114,6 +125,7 @@ function refreshCompanions(){
 }
 function report(){
  cancelAnimationFrame(frame);frame=0;if(disposed||!layout)return;
+ if(interaction&&presenter)syncIdleSleep();
  if(!presenter?.current){
   if(!$('error').hidden){const r=rect($('error'));bridge.report({bounds:union([r],18),hitRegions:[r],position:eye,mode:'normal',pointerDown:false});}
   return;
@@ -168,7 +180,7 @@ try{
  interaction=new PetInteraction({stage,presenter,createDrag,createFlight,createPeek,taskEye,edgeWidth:DRAG_EDGE_WIDTH,onClick:touch,
   pointFromEvent:e=>({x:e.screenX-layout.desktop.x,y:e.screenY-layout.desktop.y}),
   workAreaAt:p=>areaAt(p,areas),edgeAt:(p,a)=>outsideEdge(p,a,areas,DRAG_EDGE_WIDTH),
-  onChange:()=>{if(interaction.pointer?.dragged){closePanel();eye={...interaction.position};}scheduleReport();},onError:showError,
+  onChange:()=>{if(interaction.pointer?.dragged){closePanel();eye={...interaction.position};if(view.sleeping)setView({...view,sleeping:false});}syncIdleSleep();scheduleReport();},onError:showError,
  });
  interaction.position={...eye};interaction.setTarget(view);
  const resize=new ResizeObserver(scheduleReport);resize.observe(characters);resize.observe($('panel'));
@@ -178,7 +190,7 @@ try{
   else if(action.type==='scene'){closePanel();following=false;setView({scene:action.scene,form,waiting:Boolean(action.waiting),waitingPose:Boolean(action.waiting),sleeping:Boolean(action.sleeping),suspended:false});}
   else if(action.type==='follow'){following=true;followSnapshot();if(!$('panel').hidden)renderPanel();}
   else if(action.type==='panel')openPanel();
-  else if(action.type==='visible'){presenter.setVisible(action.visible);interaction.setPaused(!action.visible);}
+  else if(action.type==='visible'){presenter.setVisible(action.visible);interaction.setPaused(!action.visible);syncIdleSleep();}
   else if(action.type==='reset'){
    closePanel();eye={...layout.position};interaction.resetPosition(eye);scheduleReport();
   }
@@ -186,11 +198,12 @@ try{
  const offSessions=bridge.onSessions(value=>{snapshot=value;followSnapshot();if(!$('panel').hidden)renderPanel();});
  snapshot=await bridge.sessions();followSnapshot();
  $('close-panel').onclick=closePanel;
- stage.addEventListener('contextmenu',event=>{event.preventDefault();closePanel();bridge.menu();});
+ stage.addEventListener('contextmenu',event=>{event.preventDefault();idleSleep.restart();closePanel();bridge.menu();});
  stage.addEventListener('pointerdown',event=>{
+  idleSleep.restart();
   if(!event.target.closest('#panel'))closePanel();
  },true);
  document.addEventListener('keydown',event=>{if(event.key==='Escape')closePanel();});
- document.addEventListener('visibilitychange',()=>presenter.setVisible(!document.hidden));
- addEventListener('pagehide',()=>{disposed=true;cancelAnimationFrame(frame);resize.disconnect();offLayout();offAction();offSessions();companions.destroy();interaction.destroy();presenter.destroy();},{once:true});
+ document.addEventListener('visibilitychange',()=>{presenter.setVisible(!document.hidden);syncIdleSleep();});
+ addEventListener('pagehide',()=>{disposed=true;idleSleep.destroy();cancelAnimationFrame(frame);resize.disconnect();offLayout();offAction();offSessions();companions.destroy();interaction.destroy();presenter.destroy();},{once:true});
 }catch(error){showError(error);}
