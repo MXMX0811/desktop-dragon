@@ -109,7 +109,8 @@ function refreshCompanions(){
  const active=following&&snapshot?.activity.agentCount>0&&!interaction.active&&!presenter.busy&&current.view.scene!=='standby';
  if(active)companions.setAnchor(current.element,current.view);
  companions.setActive(active);
- companions.setPaused(view.suspended||interaction.active);
+ // Inactive clouds must finish retracting, including while the pet is dragged.
+ companions.setPaused(active&&view.suspended);
 }
 function report(){
  cancelAnimationFrame(frame);frame=0;if(disposed||!layout)return;
