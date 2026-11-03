@@ -1,6 +1,7 @@
 :root{font:13px/1.5 system-ui,-apple-system,sans-serif;color:#41354e;color-scheme:light;background:transparent}
 *{box-sizing:border-box}html,body{margin:0;overflow:hidden;background:transparent;width:100%;height:100%;user-select:none}
-#stage{position:fixed;isolation:isolate;overflow:hidden;pointer-events:none}
+/* Edge canvases extend offscreen; revealing them must never scroll the desktop. */
+#stage{position:fixed;isolation:isolate;overflow:clip;pointer-events:none}
 #characters{position:absolute;left:0;top:0;width:0;height:0;pointer-events:none}
 .character{position:absolute;left:0;top:0;display:block}
 .character canvas,.interaction-pet canvas,.interaction-pet img{display:block;max-width:none;touch-action:none;pointer-events:auto;cursor:grab}

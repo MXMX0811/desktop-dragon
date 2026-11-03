@@ -17,7 +17,7 @@ function element(){
  };
 }
 
-async function harness(t,{initial=view(),taskLoad=async()=>{},dragLoad=async()=>{},flightLoad=async()=>{},flightPlay=()=>{},edgeWidth=171.44,taskBounds=()=>({width:200,height:240,eyeX:100,eyeY:100})}={}){
+async function harness(t,{initial=view(),taskLoad=async()=>{},dragLoad=async()=>{},flightLoad=async()=>{},peekLoad=async()=>{},flightPlay=()=>{},edgeWidth=171.44,taskBounds=()=>({width:200,height:240,eyeX:100,eyeY:100})}={}){
  const saved=Object.fromEntries(['document','window','ResizeObserver','requestAnimationFrame','cancelAnimationFrame'].map(name=>[name,global[name]]));
  global.document={hidden:false,createElement:element,addEventListener(){},removeEventListener(){}};
  global.window={addEventListener(){},removeEventListener(){}};
@@ -48,16 +48,17 @@ async function harness(t,{initial=view(),taskLoad=async()=>{},dragLoad=async()=>
  presenter.cloud=effects('presenter');presenter.fade={animations:[],play:async()=>{},destroy(){}};
  function scene(kind,el,ended){
   let eye={x:0,y:0};el.hit=true;
-  const result={kind,element:el,starts:0,releases:0,destroyed:0,
+  const result={kind,element:el,starts:0,releases:0,destroyed:0,touches:0,pauses:[],
    place(p){eye=p.eye?{...p.eye}:kind==='peek'?{x:p.edgeX,y:p.eyeY}:{...p};},eye:()=>({...eye}),
    begin(){result.starts++;},release(){result.releases++;},move(){},tick(){},
+   touch(){result.touches++;},setPaused(value){result.pauses.push(value);},
    async play(){events.push('play-flight');flightPlay(ended);},pause(){},async resume(){},ended,
    destroy(){result.destroyed++;events.push(`destroy-${kind}`);},
   };scenes.push(result);return result;
  }
  const interaction=new PetInteraction({stage,presenter,edgeWidth,
   createDrag:async el=>{await dragLoad();return scene('drag',el);},
-  createFlight:async(el,ended)=>{await flightLoad();return scene('flight',el,ended);},createPeek:async el=>scene('peek',el),
+  createFlight:async(el,ended)=>{await flightLoad();return scene('flight',el,ended);},createPeek:async el=>{await peekLoad();return scene('peek',el);},
   taskEye:taskPosition,
   onClick:count=>clicks.push(count),onError:error=>errors.push(error),
  });
@@ -343,10 +344,66 @@ test('dragging resets click count and regrabbing a returning drag starts it agai
 
 test('dragging out of a peek restores a task that changed while clinging',async t=>{
  const h=await harness(t,{flightPlay:ended=>ended()});h.down();h.move();await flush();h.up(590);await flush();
+ const peek=h.scenes.find(scene=>scene.kind==='peek');
  const latest=view('reading','normal',{waiting:true,waitingPose:true});h.interaction.setTarget(latest);
  h.down(590);h.move(400);await flush();assert.equal(h.interaction.current.kind,'drag');
  h.up(350);await flush();assert.equal(h.presenter.current.view,latest);
  assert.equal(h.presenter.current.animation.waiting,true);assert.equal(h.interaction.active,false);
+ assert.equal(peek.touches,0);assert.deepEqual(h.clicks,[]);assert.equal(peek.destroyed,1);
+});
+
+for(const side of ['left','right']){
+ test(`${side} peek clicks animate the visible portrait without touching the retained task`,async t=>{
+  const h=await harness(t,{flightPlay:ended=>ended()}),x=side==='left'?10:590;
+  h.down();h.move(x);await flush();h.up(x);await flush();
+  const entry=h.interaction.current,peek=h.scenes.find(scene=>scene.kind==='peek'),target=h.interaction.target;
+  assert.equal(entry.kind,'peek');assert.equal(entry.side,side);
+  // Repeated quick clicks must not enter the normal character's triple-click path.
+  for(let i=0;i<3;i++){h.down(x);h.up(x);}
+  assert.equal(peek.touches,3);assert.deepEqual(h.clicks,[]);assert.equal(h.interaction.clickCount,0);
+  assert.equal(h.interaction.current,entry);assert.equal(h.interaction.target,target);
+  assert.equal(h.presenter.current.animation.visible,false);assert.equal(h.presenter.current.animation.suspended,true);
+  assert.deepEqual(h.errors,[]);
+ });
+}
+
+test('a hidden or paused peek stops its animation and accepts clicks again after showing',async t=>{
+ const h=await harness(t,{flightPlay:ended=>ended()});h.down();h.move(590);await flush();h.up(590);await flush();
+ const peek=h.scenes.find(scene=>scene.kind==='peek');
+ h.interaction.setPaused(true);h.down(590);h.up(590);
+ assert.equal(peek.pauses.at(-1),true);assert.equal(peek.touches,0);
+ h.interaction.setPaused(false);h.down(590);h.up(590);
+ assert.equal(peek.pauses.at(-1),false);assert.equal(peek.touches,1);
+ h.down(590);document.hidden=true;h.interaction.onVisibility();h.up(590);
+ assert.equal(h.interaction.pointer,null);assert.equal(h.stage.hasPointerCapture(1),false);
+ assert.equal(peek.pauses.at(-1),true);assert.equal(peek.touches,1);
+ document.hidden=false;h.interaction.onVisibility();h.down(590);h.up(590);
+ assert.equal(peek.pauses.at(-1),false);assert.equal(peek.touches,2);
+ assert.deepEqual(h.clicks,[]);assert.deepEqual(h.errors,[]);
+});
+
+test('a peek finishing loading while hidden starts paused and resumes when shown',async t=>{
+ const load=deferred(),h=await harness(t,{flightPlay:ended=>ended(),peekLoad:()=>load.promise});
+ h.down();h.move(590);await flush();h.up(590);await flush();
+ assert.equal(h.interaction.mode,'peek');assert.equal(h.interaction.busy,true);
+ document.hidden=true;h.interaction.onVisibility();load.resolve();await flush();
+ const peek=h.scenes.find(scene=>scene.kind==='peek');
+ assert.equal(h.interaction.current.kind,'peek');assert.equal(peek.pauses[0],true);
+ document.hidden=false;h.interaction.onVisibility();assert.equal(peek.pauses.at(-1),false);
+ assert.deepEqual(h.errors,[]);
+});
+
+test('the outgoing peek stays pausable during the drag transition and is disposed once',async t=>{
+ const h=await harness(t,{flightPlay:ended=>ended()});h.down();h.move(590);await flush();h.up(590);await flush();
+ const peek=h.scenes.find(scene=>scene.kind==='peek'),fade=deferred();
+ h.interaction.fade.play=()=>fade.promise;
+ h.down(590);h.move(400);await flush();
+ assert.equal(h.interaction.current.kind,'drag');assert.equal(h.interaction.outgoing.kind,'peek');
+ h.interaction.setPaused(true);assert.equal(peek.pauses.at(-1),true);
+ h.interaction.setPaused(false);assert.equal(peek.pauses.at(-1),false);
+ fade.resolve();await flush();h.up(350);await flush();
+ assert.equal(peek.destroyed,1);assert.equal(peek.touches,0);
+ assert.equal(h.interaction.active,false);assert.deepEqual(h.clicks,[]);assert.deepEqual(h.errors,[]);
 });
 
 test('returning from the edge fits a taller task canvas without changing its size',async t=>{

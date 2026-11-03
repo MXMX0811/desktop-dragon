@@ -95,6 +95,8 @@ export class PetInteraction {
   }else if(this.mode==='normal'){
    this.clickCount=e.timeStamp-this.clickAt<=420?this.clickCount+1:1;this.clickAt=e.timeStamp;
    this.onClick(this.clickCount);this.onChange();
+  }else if(this.mode==='peek'&&this.current?.kind==='peek'&&!this.busy&&!this.paused&&!this.hidden){
+   this.current.touch();this.onChange();
   }
  }
  cancel(){
@@ -132,7 +134,9 @@ export class PetInteraction {
    });
    if(wanted.kind==='peek')scene=await this.createPeek(element);
    const entry={...scene,element,kind:wanted.kind,side:wanted.side,anchor:wanted.anchor,area:wanted.area,form:'chibi'};
-   this.layout(entry);return entry;
+   this.layout(entry);
+   if(entry.kind==='peek')entry.setPaused(this.hidden||this.paused);
+   return entry;
   }catch(error){scene?.destroy();element.remove();throw error;}
  }
  layout(entry){
@@ -215,6 +219,7 @@ export class PetInteraction {
  suspend(){
   const pause=this.hidden||this.paused;
   for(const animation of [...this.fade.animations,...this.cloud.animations])pause?animation.pause():animation.play();
+  for(const entry of [this.current,this.pending,this.outgoing])if(entry?.kind==='peek')entry.setPaused(pause);
   if(this.current?.kind==='flight'){
    if(pause)this.current.pause();else this.current.resume().catch(this.onError);
   }

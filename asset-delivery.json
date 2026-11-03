@@ -1,5 +1,5 @@
 {
-  "date": "2026-11-03",
+  "date": "2026-11-04",
   "artWorkspace": "<art-workspace>/dragon-pet",
   "baselineRecord": "docs/accepted-animations-2026-10-31.txt",
   "currentRevisionNotes": "docs/asset-catalog.md",
@@ -878,18 +878,6 @@
       "notes": "2026-11-02用户要求真实桌面实现，沿用当前制作预览的拖拎和探头交互；按本次实施交付，不追记此前单独采纳。"
     },
     {
-      "source": "edge-animation/scene.mjs",
-      "path": "assets/animations/peek/chibi/scene.js",
-      "group": "current",
-      "notes": "2026-11-02用户要求真实桌面实现，沿用当前制作预览的拖拎和探头交互；按本次实施交付，不追记此前单独采纳。"
-    },
-    {
-      "source": "desktop-states-2026-11-02/peek-right-chibi-v3-colors.png",
-      "path": "assets/animations/peek/chibi/textures/character.png",
-      "group": "current",
-      "notes": "2026-11-02用户要求真实桌面实现，沿用当前制作预览的拖拎和探头交互；按本次实施交付，不追记此前单独采纳。"
-    },
-    {
       "source": "interaction-animation/scenes.mjs",
       "path": "app/runtime/interaction-scenes.js",
       "group": "current",
@@ -926,6 +914,71 @@
     {
       "source": "app-icons/app.ico",
       "path": "assets/icons/app.ico",
+      "group": "current"
+    },
+    {
+      "source": "edge-animation/candidate.mjs",
+      "path": "assets/animations/peek/chibi/scene.js",
+      "group": "current"
+    },
+    {
+      "source": "edge-animation/scene.mjs",
+      "path": "assets/animations/peek/chibi/layout.js",
+      "group": "current"
+    },
+    {
+      "source": "edge-animation/face.mjs",
+      "path": "assets/animations/peek/chibi/face.js",
+      "group": "current"
+    },
+    {
+      "source": "edge-animation/layers/body.png",
+      "path": "assets/animations/peek/chibi/textures/body.png",
+      "group": "current"
+    },
+    {
+      "source": "edge-animation/layers/wing.png",
+      "path": "assets/animations/peek/chibi/textures/wing.png",
+      "group": "current"
+    },
+    {
+      "source": "edge-animation/layers/original.png",
+      "path": "assets/animations/peek/chibi/textures/original.png",
+      "group": "current"
+    },
+    {
+      "source": "edge-animation/layers/skin.png",
+      "path": "assets/animations/peek/chibi/textures/skin.png",
+      "group": "current"
+    },
+    {
+      "source": "edge-animation/layers/front.png",
+      "path": "assets/animations/peek/chibi/textures/front.png",
+      "group": "current"
+    },
+    {
+      "source": "edge-animation/layers/front-mask.png",
+      "path": "assets/animations/peek/chibi/textures/front-mask.png",
+      "group": "current"
+    },
+    {
+      "source": "edge-animation/layers/iris-right.png",
+      "path": "assets/animations/peek/chibi/textures/iris-right.png",
+      "group": "current"
+    },
+    {
+      "source": "edge-animation/layers/iris-left.png",
+      "path": "assets/animations/peek/chibi/textures/iris-left.png",
+      "group": "current"
+    },
+    {
+      "source": "edge-animation/layers/lash-right.png",
+      "path": "assets/animations/peek/chibi/textures/lash-right.png",
+      "group": "current"
+    },
+    {
+      "source": "edge-animation/layers/lash-left.png",
+      "path": "assets/animations/peek/chibi/textures/lash-left.png",
       "group": "current"
     }
   ],

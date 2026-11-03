@@ -49,15 +49,15 @@ export async function createFlight(element,onEnded){
  };
 }
 export async function createPeek(element){
- const image=document.createElement('img');image.alt='扒在边缘的龙娘，向画布内拖回';image.dataset.petHit='';element.append(image);
- const scene=await createEdgeScene({image});let bounds;
+ const canvas=document.createElement('canvas');element.append(canvas);
+ const scene=await createEdgeScene({canvas,PIXI:globalThis.PIXI});let bounds;
  return {
   place(options){
    bounds=scene.layout({size:displaySize('peek','chibi'),...options});
    const cropLeft=bounds.visible.left-bounds.left,cropRight=bounds.width-cropLeft-bounds.visible.width;
    Object.assign(element.style,{left:`${bounds.left}px`,top:`${bounds.top}px`,width:`${bounds.width}px`,height:`${bounds.height}px`,clipPath:`inset(0px ${cropRight}px 0px ${cropLeft}px)`});
-   image.style.left=image.style.top='0px';image.style.pointerEvents='auto';
+   canvas.style.left=canvas.style.top='0px';
   },
-  eye(){return bounds.eye;},destroy:()=>scene.destroy(),
+  eye(){return bounds.eye;},touch:()=>scene.touch(),setPaused:value=>scene.setPaused(value),destroy:()=>scene.destroy(),
  };
 }

@@ -14,7 +14,7 @@
 | 正比绘图与待确认 | `assets/animations/drawing/normal/scene.js` | 无眼镜，浮现图稿，10/31整体确认 |
 | Q版思考 | `assets/animations/thinking/chibi/scene.js` | 站立全身，10/31整体确认 |
 | Q版拖拎与惯性摆动 | `assets/animations/drag/chibi/scene.js` | 11/02按用户“好的，请进行真实桌面实现”沿用当前制作预览交付；2.5头身、闭眼开口笑、较慢回正；不追记为此前单独采纳 |
-| Q版扒边探头 | `assets/animations/peek/chibi/scene.js` | 同次桌面实施交付，整图裁切至左右边缘；左侧镜像，保留当前肤色 |
+| Q版扒边探头 | `assets/animations/peek/chibi/scene.js` | 11/04按用户指令交付点击回弹与振翅，使用独立身体、翅膀与眼部层；常驻呼吸眨眼、左侧镜像，抓边接触线保持原位置 |
 | Q版飞行 · 60fps | `assets/animations/flight/chibi/scene.js`、`textures/flight.webm` | 11/02用户明确“采纳60帧版本”；5640源片、1112×834、290帧、源时长约4.834秒透明VP9；按后续要求1.5倍速播放约3.22秒。已接原生桌面左右边缘松手触发，macOS右侧飞行、扒边及拖回已实测 |
 | 共用控制器、校色、问号、终端、图稿与角色部件 | `assets/shared/` | 保留已有动画的共用实现；沿用用户要求的校色修订，校色后单独采纳未记录 |
 | 子代理小云、同步环绕与点击反馈 | `assets/shared/subagents/scene.js`、`style.css`和`textures/` | 11/02确认，Q版半径0.85；11/03按用户要求在人物整体缩小至90%时将云朵实际放大约10%，同步环绕一圈由6秒改为4秒，常驻周期18秒。已接桌面只读观察器的子代理活动计数，任务场景出现双云。11/03已实测单个子代理的独立轮次、启动/结束计数及原生双云显隐；复杂嵌套归属仍待验证，不以造型推断模型品牌或任务数量 |
@@ -40,3 +40,11 @@
 拖拎完整母图来自 `desktop-states-2026-11-02/drag-chibi-v8-2p5-closed.png`，网格和惯性控制器来自 `drag-animation/`；扒边来自 `desktop-states-2026-11-02/peek-right-chibi-v3-colors.png` 与 `edge-animation/scene.mjs`。仓库使用语义目标名 `textures/character.png`，不改动像素与运动参数。
 
 `app/runtime/interaction-scenes.js` 将三种交互资产接给现有软件手势调度，统一导出 `DRAG_WIDTH`、`taskEye`、`createDrag`、`createFlight` 和 `createPeek`。拖拎保留各局部角速度，飞行复用已采纳60fps/1.5倍模块，扒边使用整体镜像和边缘裁切。新增 `drag-chibi` 与 `peek-chibi` 校色矩阵，其余已交付矩阵保持原值。
+
+## 2026-11-04扒边点击反馈交付
+
+用户明确要求“将贴边状态的回弹和振翅应用至实际交付代码”。采用制作区`edge-animation/candidate.mjs`与实际使用的`layers/`，`face.mjs`改为交付语义名`face.js`，原`scene.mjs`的定位常量与函数提取为`layout.js`。检查页面、制作脚本、生成中间稿及`sample/renderFrame`检查接口不交付。
+
+点击播放0.64秒轻微回弹和1.35秒振翅，连续点击维持当前回应；沿用该分层模块的4.7秒呼吸和5.7秒眨眼。左右布局、人物尺寸、裁切与双手接触线保留。正式手势层把扒边单击送到当前扒边动画，达到拖动阈值后执行拖动；隐藏、暂停、销毁停止动画时钟。正式软件不读取制作目录。
+
+制作检查记录中的限制继续保留：162档未辨出翼下交接问题；原生像素放大时，点击峰值附近的翼下隐面发束有小段较直接缝。此次接入不把旧的1000档整页未验收记录改写为通过。
