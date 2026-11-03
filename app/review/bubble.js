@@ -10,7 +10,7 @@ const holdMs={info:4000,dialogue:3000};
 // Review controls and fictional quota only; no account or session connection.
 let loaded=false;
 let host,special,container,companions,pose='work',scene='work',form='chibi';
-let kind=null,nextLine=0,selectedLine=null,caption='',timer=null,effect=null,showing=false,generation=0,disposed=false,dragFrame=0;
+let kind=null,selectedLine=null,caption='',timer=null,effect=null,showing=false,generation=0,disposed=false,dragFrame=0;
 const ready=()=>loaded;
 const group=()=>special?special.kind:$('waiting').checked?'waiting':$('agents').checked?'subagents':pose;
 
@@ -78,12 +78,12 @@ function present(nextKind,render){
  else animateBubble([from,{opacity:0,transform:'translateY(4px) scale(.94)'}],140,'ease-in',enter);
 }
 function hide(){
- clearTimeout(timer);timer=null;kind=null;showing=false;nextLine=0;selectedLine=null;
+ clearTimeout(timer);timer=null;kind=null;showing=false;selectedLine=null;
  animateBubble([currentAppearance(),{opacity:0,transform:'translateY(7px) scale(.9)'}],210,'cubic-bezier(.4,0,.8,.4)',()=>{bubble.hidden=true;});updateStatus();
 }
 function showInfo(){
  if(!ready())return;
- nextLine=0;selectedLine=null;caption='剩余额度示例';const sample=$('sample').value;
+ selectedLine=null;caption='剩余额度示例';const sample=$('sample').value;
  const heading='<span class="title quota-title">剩余额度<span class="sample-tag">示例</span></span>';
  let markup;
  if(sample==='missing')markup=`<div class="bubble-heading">${heading}</div><p class="no-data">账户用量暂无数据</p>`;
@@ -103,8 +103,17 @@ function showText(text){
 }
 function showLine(index){
  if(!ready())return;
- const entry=DIALOGUES[group()];selectedLine=index;nextLine=(index+1)%entry.lines.length;
+ const entry=DIALOGUES[group()];selectedLine=index;
  caption=`${entry.label} · 台词 ${index+1}/${entry.lines.length}`;showText(entry.lines[index]);
+}
+function showRandomLine(){
+ const count=DIALOGUES[group()].lines.length;
+ if(count===1){showLine(0);return;}
+ const previous=kind==='dialogue'?selectedLine:null;
+ // Choose uniformly from the current group, excluding the last selected line.
+ let index=Math.floor(Math.random()*(count-(previous===null?0:1)));
+ if(previous!==null&&index>=previous)index++;
+ showLine(index);
 }
 function reviewLines(){
  const entry=DIALOGUES[group()];$('dialogue-label').textContent=`${entry.label} · ${entry.lines.length}句预置对话`;
@@ -120,20 +129,20 @@ function syncContext(){
  if(!ready())return;
  if(host)host.setWaiting($('waiting').checked);
  if(companions){companions.setActive($('agents').checked);}
- reviewLines();showLine(0);
+ selectedLine=null;reviewLines();showRandomLine();
 }
 function feedback(){
  if(host){
   if(pose==='sleep'){
    host.setSleeping(false);pose='standby';$('scene').value='standby';$('scale-label').textContent='当前桌面尺寸 · Q 版 · 待机';
-   nextLine=0;selectedLine=null;reviewLines();
+   selectedLine=null;reviewLines();
   }else host.touch();
  }else if(special.kind==='drag')special.scene.move(10,-4,.1);
  companions?.triggerOrbit();
 }
 function clickPet(){
  if(!ready())return;
- feedback();if(!kind)showInfo();else showLine(nextLine);
+ feedback();if(!kind)showInfo();else showRandomLine();
 }
 function runDrag(){
  cancelAnimationFrame(dragFrame);dragFrame=0;
@@ -145,7 +154,7 @@ function runDrag(){
  };dragFrame=requestAnimationFrame(tick);
 }
 async function load(){
- const id=++generation;loaded=false;clearTimeout(timer);effect?.cancel();effect=null;showing=false;cancelAnimationFrame(dragFrame);kind=null;nextLine=0;selectedLine=null;bubble.hidden=true;
+ const id=++generation;loaded=false;clearTimeout(timer);effect?.cancel();effect=null;showing=false;cancelAnimationFrame(dragFrame);kind=null;selectedLine=null;bubble.hidden=true;
  $('error').hidden=true;$('loading').hidden=false;
  for(const key of ['next','show-info','show-easter'])$(key).disabled=true;
  $('line-options').replaceChildren();companions?.destroy();companions=null;host?.destroy();host=null;special?.scene.destroy();special=null;container=null;pet.replaceChildren();
@@ -178,7 +187,7 @@ async function load(){
   }
   $('scale-label').textContent=`当前桌面尺寸 · ${nextForm==='chibi'?'Q 版':'正比'} · ${names[nextPose]}`;
   $('stage-scroll').scrollLeft=nextPose==='peek-left'?0:nextPose==='peek-right'?stage.clientWidth-$('stage-scroll').clientWidth:(stage.clientWidth-$('stage-scroll').clientWidth)/2;
-  $('stage-hint').textContent=special?'姿态定点预览 · 点击查看当前状态台词':'点击龙娘 · 查看当前状态台词';
+  $('stage-hint').textContent=special?'姿态定点预览 · 点击随机回应':'点击龙娘 · 随机回应当前状态';
   $('loading').hidden=true;loaded=true;for(const key of ['next','show-info','show-easter'])$(key).disabled=false;syncContext();
  }catch(error){if(id!==generation||disposed)return;$('loading').hidden=true;$('error').hidden=false;$('error').textContent=`预览加载失败：${error.message}`;}
 }
