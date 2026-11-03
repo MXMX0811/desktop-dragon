@@ -35,6 +35,7 @@ async function harness(t,{initial=view(),taskLoad=async()=>{},dragLoad=async()=>
   const el=element();el.hit=true;taskStage.append(el);
   const bounds=taskBounds(v),canvas=element();el.querySelector=()=>canvas;
   canvas.getBoundingClientRect=()=>{const eye=taskPosition(v,el);return{left:eye.x-bounds.eyeX,top:eye.y-bounds.eyeY,width:bounds.width,height:bounds.height};};
+  el.getBoundingClientRect=canvas.getBoundingClientRect;
   const animation={setWaiting(value){this.waiting=value;},setSleeping(value){this.sleeping=value;},
    setSuspended(value){this.suspended=value;},setVisible(value){this.visible=value;},resize(){events.push(`resize-task:${v.scene}:${v.form}`);},touch(){},
    destroy(){events.push(`destroy-task:${v.scene}:${v.form}`);},

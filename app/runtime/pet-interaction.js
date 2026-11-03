@@ -48,7 +48,7 @@ export class PetInteraction {
   entry.element.style.transform=`translate(${fitted.x-before.x}px,${fitted.y-before.y}px)`;
  }
  fitTaskEye(eye,entry){
-  const canvas=entry.element.querySelector('canvas').getBoundingClientRect();
+  const canvas=entry.element.getBoundingClientRect();
   const stage=this.stage.getBoundingClientRect(),current=this.eye(entry);
   const area=this.workArea(eye);
   const anchor={x:current.x-(canvas.left-stage.left-this.stage.clientLeft),y:current.y-(canvas.top-stage.top-this.stage.clientTop)};

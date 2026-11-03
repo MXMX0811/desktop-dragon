@@ -24,14 +24,14 @@ async function load(){
   if(id!==generation){next.destroy();return;}
   host=next;
   $('stage').style.padding=Math.max(24,Number($('size').value)*.21)+'px';
-  if(kind!=='standby')companions.setAnchor(host.canvas,{scene:kind,form:$('form').value});
+  if(kind!=='standby')companions.setAnchor(host.container,{scene:kind,form:$('form').value});
   $('subagents').disabled=false;syncCompanions();
   $('waiting').disabled=!dual;$('sleep').disabled=kind!=='standby';$('touch').disabled=false;$('pause').disabled=false;
   $('status').textContent='已加载 · 点击角色或按钮检查互动';
  }catch(error){if(id===generation)$('status').textContent=error.message;}
 }
 for(const key of ['scene','form'])$(key).onchange=load;
-$('size').onchange=()=>{if(!host)return;companions.setPaused(true);$('stage').style.padding=Math.max(24,Number($('size').value)*.21)+'px';host.resize(Number($('size').value));if(host.kind!=='standby')companions.setAnchor(host.canvas,{scene:host.kind,form:host.form});syncCompanions();};
+$('size').onchange=()=>{if(!host)return;companions.setPaused(true);$('stage').style.padding=Math.max(24,Number($('size').value)*.21)+'px';host.resize(Number($('size').value));if(host.kind!=='standby')companions.setAnchor(host.container,{scene:host.kind,form:host.form});syncCompanions();};
 $('subagents').onchange=()=>{sessionStorage.setItem('dragon.preview.subagents',String($('subagents').checked));syncCompanions();};
 $('waiting').onclick=()=>{waiting=!waiting;host.setWaiting(waiting);$('waiting').textContent=waiting?'继续动作':'等待确认';};
 $('sleep').onclick=()=>{sleeping=!sleeping;host.setSleeping(sleeping);$('sleep').textContent=sleeping?'唤醒':'休眠';};

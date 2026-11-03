@@ -15,7 +15,8 @@ async function loadImages(module,base){
 export class AnimationHost{
  constructor({kind,form,canvas,controller,scene,container,size=320}){
   Object.assign(this,{kind,form,canvas,controller,scene,container});
-  this.visible=true;this.suspended=false;this.destroyed=false;this.raf=0;this.last=null;
+  this.visible=true;this.suspended=false;this.destroyed=false;this.raf=0;this.last=null;this.feedback=null;
+  canvas.style.transformOrigin='50% 90%';
   this.ready=Promise.resolve();
   this.tick=now=>{
    this.raf=0;
@@ -26,7 +27,7 @@ export class AnimationHost{
    }
    this.last=now;this.render();this.raf=requestAnimationFrame(this.tick);
   };
-  this.onVisibility=()=>this.schedule();
+  this.onVisibility=()=>{if(document.hidden)this.cancelFeedback();this.schedule();};
   document.addEventListener('visibilitychange',this.onVisibility);
   this.resize(size);this.render();this.schedule();
  }
@@ -44,17 +45,31 @@ export class AnimationHost{
  setSleeping(sleeping){
   if(this.kind!=='standby')return false;
   if(sleeping)this.controller.sleep();
-  else if(this.controller.state==='sleeping'||this.controller.state==='falling-asleep')this.controller.touch();
+  else if(this.controller.state==='sleeping'||this.controller.state==='falling-asleep'){this.controller.touch();this.rebound();}
   this.render();return true;
  }
- setSuspended(value){const next=Boolean(value);if(this.suspended===next)return;this.suspended=next;this.schedule();}
- setVisible(value){const next=Boolean(value);if(this.visible===next)return;this.visible=next;this.canvas.style.visibility=this.visible?'visible':'hidden';this.schedule();}
+ setSuspended(value){const next=Boolean(value);if(this.suspended===next)return;this.suspended=next;if(next)this.cancelFeedback();this.schedule();}
+ setVisible(value){const next=Boolean(value);if(this.visible===next)return;this.visible=next;if(!next)this.cancelFeedback();this.canvas.style.visibility=this.visible?'visible':'hidden';this.schedule();}
  touch(){
   if(!this.active())return false;
   if(this.kind==='reading'&&this.form==='normal')this.controller.click();
   else this.controller.touch();
-  this.render();return true;
+  this.rebound();this.render();return true;
  }
+ rebound(){
+  if(!this.active()||this.feedback?.playState==='running')return;
+  // Only the painted canvas moves; its layout box remains the drag/hit anchor.
+  const feedback=this.canvas.animate([
+   {offset:0,transform:'scale(1,1)'},
+   {offset:.22,transform:'scale(1.008,.982)'},
+   {offset:.52,transform:'scale(.996,1.009)'},
+   {offset:.78,transform:'scale(1.002,.997)'},
+   {offset:1,transform:'scale(1,1)'},
+  ].map(frame=>({...frame,easing:'cubic-bezier(.37,0,.63,1)'})),{duration:480});
+  this.feedback=feedback;
+  feedback.onfinish=()=>{feedback.cancel();if(this.feedback===feedback)this.feedback=null;};
+ }
+ cancelFeedback(){if(this.feedback){this.feedback.onfinish=null;this.feedback.cancel();this.feedback=null;}}
  resize(size){
   this.scene.resize(size);
   this.container.style.width=this.canvas.style.width;
@@ -63,7 +78,7 @@ export class AnimationHost{
  get frame(){return this.controller.sample();}
  destroy(){
   if(this.destroyed)return;
-  this.destroyed=true;cancelAnimationFrame(this.raf);this.raf=0;
+  this.destroyed=true;this.cancelFeedback();cancelAnimationFrame(this.raf);this.raf=0;
   document.removeEventListener('visibilitychange',this.onVisibility);
   this.scene.destroy();this.canvas.remove();
  }

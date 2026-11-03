@@ -22,7 +22,8 @@ const eyes={
 };
 export function taskEye(view,element,stage){
  const [x,y,w,h]=eyes[`${view.scene}:${view.form}`];
- const r=element.querySelector('canvas').getBoundingClientRect(),s=stage.getBoundingClientRect();
+ // The canvas can rebound on click; its untransformed container owns position.
+ const r=element.getBoundingClientRect(),s=stage.getBoundingClientRect();
  return {x:r.left-s.left-stage.clientLeft+x*r.width/w,y:r.top-s.top-stage.clientTop+y*r.height/h};
 }
 export async function createDrag(element){
