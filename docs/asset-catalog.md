@@ -4,6 +4,7 @@
 
 | 资产 | 当前交付 | 确认与限制 |
 | --- | --- | --- |
+| 彩色应用图标与README teaser | `assets/icons/app.png`、`app.icns`、`app.ico` | 11/03用户提供并明确采纳Q版扒边头像；PNG保留1254×1254原图，ICNS/ICO仅作尺寸与容器转换。README左对齐展示。菜单栏黑白候选未随本次采纳 |
 | Q版待机、休眠、掩嘴哈欠唤醒 | `assets/animations/standby/chibi/scene.js` | 10/29唤醒采用，10/31整体确认；唤醒1.5倍、点击振翅、醒后振翅，沿用后续呼吸调幅 |
 | 正比阅读与待确认 | `assets/animations/reading/normal/scene.js` | 双手握书，自动连翻；等待往返最初3倍速，10/31确认 |
 | 正比工作与待确认 | `assets/animations/work/normal/scene.js` | 自然敲键手、摘戴眼镜/托腮、1.5倍往返，10/31确认 |

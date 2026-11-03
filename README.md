@@ -1,5 +1,9 @@
 # desktop-dragon
 
+<p align="left">
+  <img src="assets/icons/app.png" width="240" height="240" alt="Desktop Dragon：扒着图标下沿的Q版白龙娘头像">
+</p>
+
 面向 macOS、Windows 的桌面龙娘，用分层动画显示已观察到的 Codex 会话、工具和子代理活动。支持点击反馈、拖动、形态切换、左右边缘飞行与扒边，以及右键会话查询。软件只读取状态，人物交互只改变本地表现。
 
 实现范围和平台限制见[架构说明](docs/architecture.md)。

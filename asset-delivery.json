@@ -1,5 +1,5 @@
 {
-  "date": "2026-11-02",
+  "date": "2026-11-03",
   "artWorkspace": "<art-workspace>/dragon-pet",
   "baselineRecord": "docs/accepted-animations-2026-10-31.txt",
   "currentRevisionNotes": "docs/asset-catalog.md",
@@ -957,6 +957,21 @@
       "path": "assets/vendor/pixi-csp.txt",
       "group": "runtime",
       "deliveredAt": "2026-11-03"
+    },
+    {
+      "source": "app-icons/app.png",
+      "path": "assets/icons/app.png",
+      "group": "current"
+    },
+    {
+      "source": "app-icons/app.icns",
+      "path": "assets/icons/app.icns",
+      "group": "current"
+    },
+    {
+      "source": "app-icons/app.ico",
+      "path": "assets/icons/app.ico",
+      "group": "current"
     }
   ],
   "organizationDate": "2026-11-02",
