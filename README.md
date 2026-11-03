@@ -8,6 +8,23 @@
 
 实现范围和平台限制见[架构说明](docs/architecture.md)。
 
+## 状态预览
+
+以下 GIF 展示当前内置动作。绘图和待确认可通过本地动作审阅菜单查看，尚未由 Codex 来源自动触发。
+
+<table>
+  <tr>
+    <td><strong>Q 版 · 陪伴、休眠与唤醒</strong><br><img src="docs/previews/standby.gif" width="240" height="240" alt="龙娘从休眠中醒来，掩嘴打哈欠并振翅"></td>
+    <td><strong>Q 版 · 阅读</strong><br><img src="docs/previews/reading-chibi.gif" width="240" height="240" alt="龙娘坐在书堆上阅读，书页连续翻动"></td>
+    <td><strong>Q 版 · 工作</strong><br><img src="docs/previews/work-chibi.gif" width="240" height="240" alt="龙娘坐在电脑椅上敲击笔记本键盘，并抬眼回应点击"></td>
+  </tr>
+  <tr>
+    <td><strong>Q 版 · 绘图</strong><br><img src="docs/previews/drawing-chibi.gif" width="240" height="240" alt="龙娘执笔绘图，身后浮现蓝图和涂鸦"></td>
+    <td><strong>正比 · 阅读与待确认</strong><br><img src="docs/previews/reading-normal.gif" width="240" height="240" alt="龙娘从阅读举书看向用户，问号出现，随后放下书继续阅读"></td>
+    <td><strong>正比 · 工作与待确认</strong><br><img src="docs/previews/work-normal.gif" width="240" height="240" alt="龙娘停止敲键，摘下眼镜并托腮等待，随后戴回眼镜继续工作"></td>
+  </tr>
+</table>
+
 ## 安装与运行
 
 ### macOS Apple Silicon 预览版
