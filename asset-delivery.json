@@ -1,0 +1,966 @@
+{
+  "date": "2026-11-02",
+  "artWorkspace": "<art-workspace>/dragon-pet",
+  "baselineRecord": "docs/accepted-animations-2026-10-31.txt",
+  "currentRevisionNotes": "docs/asset-catalog.md",
+  "files": [
+    {
+      "source": "character-full-body-turnaround-reference.png",
+      "path": "assets/references/character-turnaround.png",
+      "group": "current"
+    },
+    {
+      "source": "character-reference.jpg",
+      "path": "assets/references/character-original.jpg",
+      "group": "current"
+    },
+    {
+      "source": "chibi-scenes/assets/drawing/arm-pen.png",
+      "path": "assets/animations/drawing/chibi/textures/arm-pen.png",
+      "group": "current"
+    },
+    {
+      "source": "chibi-scenes/assets/drawing/arm-rest.png",
+      "path": "assets/animations/drawing/chibi/textures/arm-rest.png",
+      "group": "current"
+    },
+    {
+      "source": "chibi-scenes/assets/drawing/bodice.png",
+      "path": "assets/animations/drawing/chibi/textures/bodice.png",
+      "group": "current"
+    },
+    {
+      "source": "chibi-scenes/assets/drawing/eye-foreground.png",
+      "path": "assets/shared/textures/drawing-eyes/eye-foreground.png",
+      "group": "current"
+    },
+    {
+      "source": "chibi-scenes/assets/drawing/eye-foregroundMask.png",
+      "path": "assets/shared/textures/drawing-eyes/eye-foregroundMask.png",
+      "group": "current"
+    },
+    {
+      "source": "chibi-scenes/assets/drawing/eye-irisL.png",
+      "path": "assets/shared/textures/drawing-eyes/eye-irisL.png",
+      "group": "current"
+    },
+    {
+      "source": "chibi-scenes/assets/drawing/eye-irisR.png",
+      "path": "assets/shared/textures/drawing-eyes/eye-irisR.png",
+      "group": "current"
+    },
+    {
+      "source": "chibi-scenes/assets/drawing/eye-lashesL.png",
+      "path": "assets/shared/textures/drawing-eyes/eye-lashesL.png",
+      "group": "current"
+    },
+    {
+      "source": "chibi-scenes/assets/drawing/eye-lashesR.png",
+      "path": "assets/shared/textures/drawing-eyes/eye-lashesR.png",
+      "group": "current"
+    },
+    {
+      "source": "chibi-scenes/assets/drawing/eye-original.png",
+      "path": "assets/shared/textures/drawing-eyes/eye-original.png",
+      "group": "current"
+    },
+    {
+      "source": "chibi-scenes/assets/drawing/eye-skin.png",
+      "path": "assets/shared/textures/drawing-eyes/eye-skin.png",
+      "group": "current"
+    },
+    {
+      "source": "chibi-scenes/assets/drawing/eye-taskIrisL.png",
+      "path": "assets/shared/textures/drawing-eyes/eye-taskIrisL.png",
+      "group": "current"
+    },
+    {
+      "source": "chibi-scenes/assets/drawing/eye-taskIrisR.png",
+      "path": "assets/shared/textures/drawing-eyes/eye-taskIrisR.png",
+      "group": "current"
+    },
+    {
+      "source": "chibi-scenes/assets/drawing/eye-taskOriginal.png",
+      "path": "assets/shared/textures/drawing-eyes/eye-taskOriginal.png",
+      "group": "current"
+    },
+    {
+      "source": "chibi-scenes/assets/drawing/table.png",
+      "path": "assets/animations/drawing/chibi/textures/table.png",
+      "group": "current"
+    },
+    {
+      "source": "chibi-scenes/assets/reading/background-generated.png",
+      "path": "assets/animations/reading/chibi/textures/background.png",
+      "group": "current"
+    },
+    {
+      "source": "chibi-scenes/assets/reading/body-tail-separated.png",
+      "path": "assets/shared/textures/chibi-seated/body-tail-separated.png",
+      "group": "current"
+    },
+    {
+      "source": "chibi-scenes/assets/reading/book-front.png",
+      "path": "assets/animations/reading/chibi/textures/book-front.png",
+      "group": "current"
+    },
+    {
+      "source": "chibi-scenes/assets/reading/eye-L-iris-task.png",
+      "path": "assets/animations/reading/chibi/textures/eye-L-iris-task.png",
+      "group": "current"
+    },
+    {
+      "source": "chibi-scenes/assets/reading/eye-L-iris.png",
+      "path": "assets/animations/reading/chibi/textures/eye-L-iris.png",
+      "group": "current"
+    },
+    {
+      "source": "chibi-scenes/assets/reading/eye-L-lashes.png",
+      "path": "assets/animations/reading/chibi/textures/eye-L-lashes.png",
+      "group": "current"
+    },
+    {
+      "source": "chibi-scenes/assets/reading/eye-R-iris-task.png",
+      "path": "assets/animations/reading/chibi/textures/eye-R-iris-task.png",
+      "group": "current"
+    },
+    {
+      "source": "chibi-scenes/assets/reading/eye-R-iris.png",
+      "path": "assets/animations/reading/chibi/textures/eye-R-iris.png",
+      "group": "current"
+    },
+    {
+      "source": "chibi-scenes/assets/reading/eye-R-lashes.png",
+      "path": "assets/animations/reading/chibi/textures/eye-R-lashes.png",
+      "group": "current"
+    },
+    {
+      "source": "chibi-scenes/assets/reading/eye-foreground-mask.png",
+      "path": "assets/animations/reading/chibi/textures/eye-foreground-mask.png",
+      "group": "current"
+    },
+    {
+      "source": "chibi-scenes/assets/reading/eye-foreground.png",
+      "path": "assets/animations/reading/chibi/textures/eye-foreground.png",
+      "group": "current"
+    },
+    {
+      "source": "chibi-scenes/assets/reading/eye-original.png",
+      "path": "assets/animations/reading/chibi/textures/eye-original.png",
+      "group": "current"
+    },
+    {
+      "source": "chibi-scenes/assets/reading/eye-skin.png",
+      "path": "assets/animations/reading/chibi/textures/eye-skin.png",
+      "group": "current"
+    },
+    {
+      "source": "chibi-scenes/assets/reading/eye-task-original.png",
+      "path": "assets/animations/reading/chibi/textures/eye-task-original.png",
+      "group": "current"
+    },
+    {
+      "source": "chibi-scenes/assets/reading/tail.png",
+      "path": "assets/shared/textures/chibi-seated/tail.png",
+      "group": "current"
+    },
+    {
+      "source": "chibi-scenes/assets/reading/wait-armL.png",
+      "path": "assets/animations/reading/chibi/textures/wait-armL.png",
+      "group": "current"
+    },
+    {
+      "source": "chibi-scenes/assets/reading/wait-armR.png",
+      "path": "assets/animations/reading/chibi/textures/wait-armR.png",
+      "group": "current"
+    },
+    {
+      "source": "chibi-scenes/assets/reading/wait-book.png",
+      "path": "assets/animations/reading/chibi/textures/wait-book.png",
+      "group": "current"
+    },
+    {
+      "source": "chibi-scenes/assets/reading/wait-handL-detailed.png",
+      "path": "assets/animations/reading/chibi/textures/wait-handL.png",
+      "group": "current"
+    },
+    {
+      "source": "chibi-scenes/assets/reading/wait-handR-detailed.png",
+      "path": "assets/animations/reading/chibi/textures/wait-handR.png",
+      "group": "current"
+    },
+    {
+      "source": "chibi-scenes/assets/reading/wait-sleeveL.png",
+      "path": "assets/animations/reading/chibi/textures/wait-sleeveL.png",
+      "group": "current"
+    },
+    {
+      "source": "chibi-scenes/assets/reading/wait-sleeveR.png",
+      "path": "assets/animations/reading/chibi/textures/wait-sleeveR.png",
+      "group": "current"
+    },
+    {
+      "source": "chibi-scenes/assets/reading/wing-left.png",
+      "path": "assets/shared/textures/chibi-seated/wing-left.png",
+      "group": "current"
+    },
+    {
+      "source": "chibi-scenes/assets/reading/wing-right.png",
+      "path": "assets/shared/textures/chibi-seated/wing-right.png",
+      "group": "current"
+    },
+    {
+      "source": "chibi-scenes/assets/thinking-standing/body-detailed.png",
+      "path": "assets/animations/thinking/chibi/textures/body.png",
+      "group": "current"
+    },
+    {
+      "source": "chibi-scenes/assets/thinking-standing/eye-foreground-mask.png",
+      "path": "assets/animations/thinking/chibi/textures/eye-foreground-mask.png",
+      "group": "current"
+    },
+    {
+      "source": "chibi-scenes/assets/thinking-standing/eye-foreground.png",
+      "path": "assets/animations/thinking/chibi/textures/eye-foreground.png",
+      "group": "current"
+    },
+    {
+      "source": "chibi-scenes/assets/thinking-standing/eye-original.png",
+      "path": "assets/animations/thinking/chibi/textures/eye-original.png",
+      "group": "current"
+    },
+    {
+      "source": "chibi-scenes/assets/thinking-standing/eye-skin.png",
+      "path": "assets/animations/thinking/chibi/textures/eye-skin.png",
+      "group": "current"
+    },
+    {
+      "source": "chibi-scenes/assets/thinking-standing/eye-user-original.png",
+      "path": "assets/animations/thinking/chibi/textures/eye-user-original.png",
+      "group": "current"
+    },
+    {
+      "source": "chibi-scenes/assets/thinking-standing/iris-left-user.png",
+      "path": "assets/animations/thinking/chibi/textures/iris-left-user.png",
+      "group": "current"
+    },
+    {
+      "source": "chibi-scenes/assets/thinking-standing/iris-left.png",
+      "path": "assets/animations/thinking/chibi/textures/iris-left.png",
+      "group": "current"
+    },
+    {
+      "source": "chibi-scenes/assets/thinking-standing/iris-right-user.png",
+      "path": "assets/animations/thinking/chibi/textures/iris-right-user.png",
+      "group": "current"
+    },
+    {
+      "source": "chibi-scenes/assets/thinking-standing/iris-right.png",
+      "path": "assets/animations/thinking/chibi/textures/iris-right.png",
+      "group": "current"
+    },
+    {
+      "source": "chibi-scenes/assets/thinking-standing/lash-left.png",
+      "path": "assets/animations/thinking/chibi/textures/lash-left.png",
+      "group": "current"
+    },
+    {
+      "source": "chibi-scenes/assets/thinking-standing/lash-right.png",
+      "path": "assets/animations/thinking/chibi/textures/lash-right.png",
+      "group": "current"
+    },
+    {
+      "source": "chibi-scenes/assets/thinking-standing/tail.png",
+      "path": "assets/animations/thinking/chibi/textures/tail.png",
+      "group": "current"
+    },
+    {
+      "source": "chibi-scenes/assets/thinking-standing/wing-left.png",
+      "path": "assets/animations/thinking/chibi/textures/wing-left.png",
+      "group": "current"
+    },
+    {
+      "source": "chibi-scenes/assets/thinking-standing/wing-right.png",
+      "path": "assets/animations/thinking/chibi/textures/wing-right.png",
+      "group": "current"
+    },
+    {
+      "source": "chibi-scenes/assets/work-chair/armLeft.png",
+      "path": "assets/animations/work/chibi/textures/armLeft.png",
+      "group": "current"
+    },
+    {
+      "source": "chibi-scenes/assets/work-chair/armRight.png",
+      "path": "assets/animations/work/chibi/textures/armRight.png",
+      "group": "current"
+    },
+    {
+      "source": "chibi-scenes/assets/work-chair/chair.png",
+      "path": "assets/animations/work/chibi/textures/chair.png",
+      "group": "current"
+    },
+    {
+      "source": "chibi-scenes/assets/work-chair/chairFront.png",
+      "path": "assets/animations/work/chibi/textures/chairFront.png",
+      "group": "current"
+    },
+    {
+      "source": "chibi-scenes/assets/work-chair/headFront.png",
+      "path": "assets/animations/work/chibi/textures/headFront.png",
+      "group": "current"
+    },
+    {
+      "source": "chibi-scenes/assets/work-chair/keyboard.png",
+      "path": "assets/animations/work/chibi/textures/keyboard.png",
+      "group": "current"
+    },
+    {
+      "source": "chibi-scenes/assets/work-chair/layout.json",
+      "path": "assets/animations/work/chibi/layout.json",
+      "group": "current"
+    },
+    {
+      "source": "chibi-scenes/assets/work-chair/screen.png",
+      "path": "assets/animations/work/chibi/textures/screen.png",
+      "group": "current"
+    },
+    {
+      "source": "chibi-scenes/attention-tail-rig.js",
+      "path": "assets/shared/attention-tail-rig.js",
+      "group": "current"
+    },
+    {
+      "source": "chibi-scenes/busy-scribble.js",
+      "path": "assets/animations/work/chibi/busy-scribble.js",
+      "group": "current"
+    },
+    {
+      "source": "chibi-scenes/controller.js",
+      "path": "assets/shared/chibi-controller.js",
+      "group": "current"
+    },
+    {
+      "source": "chibi-scenes/drawing-effects.js",
+      "path": "assets/shared/drawing-effects.js",
+      "group": "current"
+    },
+    {
+      "source": "chibi-scenes/drawing-eyes.js",
+      "path": "assets/shared/drawing-eyes.js",
+      "group": "current"
+    },
+    {
+      "source": "chibi-scenes/drawing-motion.js",
+      "path": "assets/shared/drawing-motion.js",
+      "group": "current"
+    },
+    {
+      "source": "chibi-scenes/drawing-scene.js",
+      "path": "assets/animations/drawing/chibi/scene.js",
+      "group": "current"
+    },
+    {
+      "source": "chibi-scenes/question-art.js",
+      "path": "assets/shared/question-art.js",
+      "group": "current"
+    },
+    {
+      "source": "chibi-scenes/question-bubble.js",
+      "path": "assets/shared/question-bubble.js",
+      "group": "current"
+    },
+    {
+      "source": "chibi-scenes/reading-blink.js",
+      "path": "assets/shared/reading-blink.js",
+      "group": "current"
+    },
+    {
+      "source": "chibi-scenes/reading-proportions.js",
+      "path": "assets/shared/chibi-seated-proportions.js",
+      "group": "current"
+    },
+    {
+      "source": "chibi-scenes/reading-scene.js",
+      "path": "assets/animations/reading/chibi/scene.js",
+      "group": "current"
+    },
+    {
+      "source": "chibi-scenes/reading-shapes.js",
+      "path": "assets/shared/chibi-seated-shapes.js",
+      "group": "current"
+    },
+    {
+      "source": "chibi-scenes/reading-wait-rig.js",
+      "path": "assets/animations/reading/chibi/wait-rig.js",
+      "group": "current"
+    },
+    {
+      "source": "chibi-scenes/thinking-scene.js",
+      "path": "assets/animations/thinking/chibi/scene.js",
+      "group": "current"
+    },
+    {
+      "source": "chibi-scenes/thinking-standing-face.js",
+      "path": "assets/animations/thinking/chibi/face.js",
+      "group": "current"
+    },
+    {
+      "source": "chibi-scenes/thinking-standing-parts.js",
+      "path": "assets/animations/thinking/chibi/parts.js",
+      "group": "current"
+    },
+    {
+      "source": "chibi-scenes/work-chair-motion.js",
+      "path": "assets/animations/work/chibi/motion.js",
+      "group": "current"
+    },
+    {
+      "source": "chibi-scenes/work-scene.js",
+      "path": "assets/animations/work/chibi/scene.js",
+      "group": "current"
+    },
+    {
+      "source": "colors/reference-palette.mjs",
+      "path": "assets/shared/reference-palette.mjs",
+      "group": "current",
+      "scope": "2026-11-02仅追加flight-chibi矩阵；原有八种矩阵保持原值，drag/peek未交付。",
+      "notes": "沿用当前颜色矩阵；11/02飞行交付新增flight-chibi，后续真实桌面实施交付新增drag-chibi/peek-chibi，各次均保留原有矩阵。"
+    },
+    {
+      "source": "dragon-reading-search-a-v3.png",
+      "path": "assets/references/reading-normal.png",
+      "group": "current"
+    },
+    {
+      "source": "dragon-reading-wait-confirmation-v1.png",
+      "path": "assets/references/reading-wait-normal.png",
+      "group": "current"
+    },
+    {
+      "source": "dragon-standby-chibi-v4.png",
+      "path": "assets/references/standby-chibi.png",
+      "group": "current"
+    },
+    {
+      "source": "dragon-standby-head-tilt-v1.png",
+      "path": "assets/references/standby-normal.png",
+      "group": "current"
+    },
+    {
+      "source": "dragon-thinking-half-body-v4.png",
+      "path": "assets/references/thinking-normal.png",
+      "group": "current"
+    },
+    {
+      "source": "dragon-thinking-standing-chibi-v2.png",
+      "path": "assets/references/thinking-chibi.png",
+      "group": "current"
+    },
+    {
+      "source": "dragon-work-wait-confirmation-v4.png",
+      "path": "assets/references/work-wait-normal.png",
+      "group": "current"
+    },
+    {
+      "source": "dragon-writing-code-selected.png",
+      "path": "assets/references/work-normal.png",
+      "group": "current"
+    },
+    {
+      "source": "drawing-animation/assets/arm.png",
+      "path": "assets/animations/drawing/normal/textures/arm.png",
+      "group": "current"
+    },
+    {
+      "source": "drawing-animation/assets/body.png",
+      "path": "assets/animations/drawing/normal/textures/body.png",
+      "group": "current"
+    },
+    {
+      "source": "drawing-animation/assets/eye-fringe.png",
+      "path": "assets/animations/drawing/normal/textures/eye-fringe.png",
+      "group": "current"
+    },
+    {
+      "source": "drawing-animation/assets/eye-gaze.png",
+      "path": "assets/animations/drawing/normal/textures/eye-gaze.png",
+      "group": "current"
+    },
+    {
+      "source": "drawing-animation/assets/eye-lashL.png",
+      "path": "assets/animations/drawing/normal/textures/eye-lashL.png",
+      "group": "current"
+    },
+    {
+      "source": "drawing-animation/assets/eye-lashR.png",
+      "path": "assets/animations/drawing/normal/textures/eye-lashR.png",
+      "group": "current"
+    },
+    {
+      "source": "drawing-animation/assets/eye-original.png",
+      "path": "assets/animations/drawing/normal/textures/eye-original.png",
+      "group": "current"
+    },
+    {
+      "source": "drawing-animation/assets/eye-skin.png",
+      "path": "assets/animations/drawing/normal/textures/eye-skin.png",
+      "group": "current"
+    },
+    {
+      "source": "drawing-animation/assets/leftWing.png",
+      "path": "assets/animations/drawing/normal/textures/leftWing.png",
+      "group": "current"
+    },
+    {
+      "source": "drawing-animation/assets/rightWing.png",
+      "path": "assets/animations/drawing/normal/textures/rightWing.png",
+      "group": "current"
+    },
+    {
+      "source": "drawing-animation/assets/tail.png",
+      "path": "assets/animations/drawing/normal/textures/tail.png",
+      "group": "current"
+    },
+    {
+      "source": "drawing-animation/eyes.js",
+      "path": "assets/animations/drawing/normal/eyes.js",
+      "group": "current"
+    },
+    {
+      "source": "drawing-animation/rig.js",
+      "path": "assets/animations/drawing/normal/rig.js",
+      "group": "current"
+    },
+    {
+      "source": "drawing-animation/scene.js",
+      "path": "assets/animations/drawing/normal/scene.js",
+      "group": "current"
+    },
+    {
+      "source": "knowledge/accepted-animations-2026-10-31.txt",
+      "path": "docs/accepted-animations-2026-10-31.txt",
+      "group": "current"
+    },
+    {
+      "source": "knowledge/animation-design-guide.md",
+      "path": "docs/animation-design-guide.md",
+      "group": "current"
+    },
+    {
+      "source": "knowledge/state-design-template.md",
+      "path": "docs/state-design-template.md",
+      "group": "current"
+    },
+    {
+      "source": "reading-animation/vendor/pixi-8.22.0.min.js",
+      "path": "assets/vendor/pixi.min.js",
+      "group": "current"
+    },
+    {
+      "source": "review/wake-notes.txt",
+      "path": "docs/wake-notes.txt",
+      "group": "current"
+    },
+    {
+      "source": "runtime/animation-host.js",
+      "path": "app/runtime/animation-host.js",
+      "group": "current"
+    },
+    {
+      "source": "runtime/app.js",
+      "path": "app/runtime/app.js",
+      "group": "current"
+    },
+    {
+      "source": "runtime/assets/reading-blink.webp",
+      "path": "assets/animations/reading/normal/textures/blink.webp",
+      "group": "current"
+    },
+    {
+      "source": "runtime/assets/reading-bookClean.webp",
+      "path": "assets/animations/reading/normal/textures/bookClean.webp",
+      "group": "current"
+    },
+    {
+      "source": "runtime/assets/reading-leftSleeve.webp",
+      "path": "assets/animations/reading/normal/textures/leftSleeve.webp",
+      "group": "current"
+    },
+    {
+      "source": "runtime/assets/reading-original.webp",
+      "path": "assets/animations/reading/normal/textures/original.webp",
+      "group": "current"
+    },
+    {
+      "source": "runtime/assets/reading-question.webp",
+      "path": "assets/animations/reading/normal/textures/question.webp",
+      "group": "current"
+    },
+    {
+      "source": "runtime/assets/reading-reading.webp",
+      "path": "assets/animations/reading/normal/textures/reading.webp",
+      "group": "current"
+    },
+    {
+      "source": "runtime/assets/reading-tailClean.webp",
+      "path": "assets/animations/reading/normal/textures/tailClean.webp",
+      "group": "current"
+    },
+    {
+      "source": "runtime/assets/reading-waitLeft.webp",
+      "path": "assets/animations/reading/normal/textures/waitLeft.webp",
+      "group": "current"
+    },
+    {
+      "source": "runtime/assets/reading-waiting.webp",
+      "path": "assets/animations/reading/normal/textures/waiting.webp",
+      "group": "current"
+    },
+    {
+      "source": "runtime/assets/work-arms.webp",
+      "path": "assets/animations/work/normal/textures/arms.webp",
+      "group": "current"
+    },
+    {
+      "source": "runtime/assets/work-browSkin.webp",
+      "path": "assets/animations/work/normal/textures/browSkin.webp",
+      "group": "current"
+    },
+    {
+      "source": "runtime/assets/work-clean.webp",
+      "path": "assets/animations/work/normal/textures/clean.webp",
+      "group": "current"
+    },
+    {
+      "source": "runtime/assets/work-glasses.webp",
+      "path": "assets/animations/work/normal/textures/glasses.webp",
+      "group": "current"
+    },
+    {
+      "source": "runtime/assets/work-headUnderlay.webp",
+      "path": "assets/animations/work/normal/textures/headUnderlay.webp",
+      "group": "current"
+    },
+    {
+      "source": "runtime/assets/work-leftHandRedrawn.webp",
+      "path": "assets/animations/work/normal/textures/leftHand.webp",
+      "group": "current"
+    },
+    {
+      "source": "runtime/assets/work-leftSleeveBack.webp",
+      "path": "assets/animations/work/normal/textures/leftSleeveBack.webp",
+      "group": "current"
+    },
+    {
+      "source": "runtime/assets/work-leftSleeveFront.webp",
+      "path": "assets/animations/work/normal/textures/leftSleeveFront.webp",
+      "group": "current"
+    },
+    {
+      "source": "runtime/assets/work-leftSleeveOrnament.webp",
+      "path": "assets/animations/work/normal/textures/leftSleeveOrnament.webp",
+      "group": "current"
+    },
+    {
+      "source": "runtime/assets/work-original.webp",
+      "path": "assets/animations/work/normal/textures/original.webp",
+      "group": "current"
+    },
+    {
+      "source": "runtime/assets/work-question.webp",
+      "path": "assets/animations/work/normal/textures/question.webp",
+      "group": "current"
+    },
+    {
+      "source": "runtime/assets/work-rightHandComplete.webp",
+      "path": "assets/animations/work/normal/textures/rightHandComplete.webp",
+      "group": "current"
+    },
+    {
+      "source": "runtime/assets/work-shoulderSkin.webp",
+      "path": "assets/animations/work/normal/textures/shoulderSkin.webp",
+      "group": "current"
+    },
+    {
+      "source": "runtime/assets/work-typingHand.webp",
+      "path": "assets/animations/work/normal/textures/typingHand.webp",
+      "group": "current"
+    },
+    {
+      "source": "runtime/assets/work-upperArm.webp",
+      "path": "assets/animations/work/normal/textures/upperArm.webp",
+      "group": "current"
+    },
+    {
+      "source": "runtime/assets/work-waitingHead.webp",
+      "path": "assets/animations/work/normal/textures/waitingHead.webp",
+      "group": "current"
+    },
+    {
+      "source": "runtime/assets/work-workEyeSkin.webp",
+      "path": "assets/animations/work/normal/textures/workEyeSkin.webp",
+      "group": "current"
+    },
+    {
+      "source": "runtime/cloud.js",
+      "path": "assets/shared/transformation-cloud.js",
+      "group": "current"
+    },
+    {
+      "source": "runtime/demo.js",
+      "path": "app/runtime/demo.js",
+      "group": "current"
+    },
+    {
+      "source": "runtime/display-policy.js",
+      "path": "app/runtime/display-policy.js",
+      "group": "current"
+    },
+    {
+      "source": "runtime/display-policy.test.cjs",
+      "path": "app/runtime/display-policy.test.cjs",
+      "group": "current"
+    },
+    {
+      "source": "runtime/generated/reading.js",
+      "path": "assets/animations/reading/normal/scene.js",
+      "group": "current"
+    },
+    {
+      "source": "runtime/generated/work.js",
+      "path": "assets/animations/work/normal/scene.js",
+      "group": "current"
+    },
+    {
+      "source": "runtime/index.html",
+      "path": "app/runtime/index.html",
+      "group": "current"
+    },
+    {
+      "source": "runtime/package.json",
+      "path": "app/runtime/package.json",
+      "group": "current"
+    },
+    {
+      "source": "runtime/presenter.js",
+      "path": "app/runtime/presenter.js",
+      "group": "current"
+    },
+    {
+      "source": "runtime/scene-fade.js",
+      "path": "app/runtime/scene-fade.js",
+      "group": "current"
+    },
+    {
+      "source": "runtime/state.js",
+      "path": "app/runtime/state.js",
+      "group": "current"
+    },
+    {
+      "source": "runtime/state.test.cjs",
+      "path": "app/runtime/state.test.cjs",
+      "group": "current"
+    },
+    {
+      "source": "runtime/styles.css",
+      "path": "app/runtime/styles.css",
+      "group": "current"
+    },
+    {
+      "source": "standby-animation/redraw/assets/awake.png",
+      "path": "assets/animations/standby/chibi/textures/awake.png",
+      "group": "current"
+    },
+    {
+      "source": "standby-animation/redraw/assets/sleep.png",
+      "path": "assets/animations/standby/chibi/textures/sleep.png",
+      "group": "current"
+    },
+    {
+      "source": "standby-animation/redraw/assets/sleeve.png",
+      "path": "assets/animations/standby/chibi/textures/sleeve.png",
+      "group": "current"
+    },
+    {
+      "source": "standby-animation/redraw/assets/underlay.png",
+      "path": "assets/animations/standby/chibi/textures/underlay.png",
+      "group": "current"
+    },
+    {
+      "source": "standby-animation/redraw/assets/wing-underlay-v1.png",
+      "path": "assets/animations/standby/chibi/textures/wing-underlay.png",
+      "group": "current"
+    },
+    {
+      "source": "standby-animation/redraw/assets/yawn.png",
+      "path": "assets/animations/standby/chibi/textures/yawn.png",
+      "group": "current"
+    },
+    {
+      "source": "standby-animation/redraw/controller.js",
+      "path": "assets/animations/standby/chibi/controller.js",
+      "group": "current"
+    },
+    {
+      "source": "standby-animation/redraw/face.js",
+      "path": "assets/animations/standby/chibi/face.js",
+      "group": "current"
+    },
+    {
+      "source": "standby-animation/redraw/motion.js",
+      "path": "assets/animations/standby/chibi/motion.js",
+      "group": "current"
+    },
+    {
+      "source": "standby-animation/redraw/renderer.js",
+      "path": "assets/animations/standby/chibi/renderer.js",
+      "group": "current"
+    },
+    {
+      "source": "standby-animation/redraw/scene.js",
+      "path": "assets/animations/standby/chibi/scene.js",
+      "group": "current"
+    },
+    {
+      "source": "standby-animation/redraw/sleeve.js",
+      "path": "assets/animations/standby/chibi/sleeve.js",
+      "group": "current"
+    },
+    {
+      "source": "standby-animation/redraw/vendor/delaunator.LICENSE",
+      "path": "assets/vendor/delaunator.LICENSE",
+      "group": "current"
+    },
+    {
+      "source": "standby-animation/redraw/vendor/delaunator.js",
+      "path": "assets/vendor/delaunator.js",
+      "group": "current"
+    },
+    {
+      "source": "standby-animation/redraw/wings.js",
+      "path": "assets/animations/standby/chibi/wings.js",
+      "group": "current"
+    },
+    {
+      "source": "work-animation/work-terminals.js",
+      "path": "assets/shared/work-terminals.js",
+      "group": "current"
+    },
+    {
+      "source": "runtime/bridge/codex_stream.py",
+      "path": "app/runtime/bridge/codex_stream.py",
+      "group": "software-baseline"
+    },
+    {
+      "source": "runtime/bridge/example-events.jsonl",
+      "path": "app/runtime/bridge/example-events.jsonl",
+      "group": "software-baseline"
+    },
+    {
+      "source": "runtime/bridge/test_codex_stream.py",
+      "path": "app/runtime/bridge/test_codex_stream.py",
+      "group": "software-baseline"
+    },
+    {
+      "path": "assets/references/attribution.txt",
+      "group": "reference-attribution",
+      "origin": "仓库初次交付附带的署名记录，原路径 references/character-attribution.txt"
+    },
+    {
+      "source": "subagent-animation/companions.js",
+      "path": "assets/shared/subagents/scene.js",
+      "group": "current"
+    },
+    {
+      "source": "subagent-animation/companions.css",
+      "path": "assets/shared/subagents/style.css",
+      "group": "current"
+    },
+    {
+      "source": "desktop-states-2026-11-02/helper-sora-v1.png",
+      "path": "assets/shared/subagents/textures/sora.png",
+      "group": "current"
+    },
+    {
+      "source": "desktop-states-2026-11-02/helper-codex-v1.png",
+      "path": "assets/shared/subagents/textures/codex.png",
+      "group": "current"
+    },
+    {
+      "source": "flight-animation/scene.mjs",
+      "path": "assets/animations/flight/chibi/scene.js",
+      "group": "current",
+      "notes": "2026-11-02采纳60帧版本；校色与视频使用仓库相对地址，按后续要求仅飞行playbackRate=1.5。"
+    },
+    {
+      "source": "flight-animation/qa/timing-60fps/flight-60fps.webm",
+      "path": "assets/animations/flight/chibi/textures/flight.webm",
+      "group": "current",
+      "notes": "用户原话：采纳60帧版本。5640源片；1112×834、290帧、60fps、约4.834秒透明VP9。文件不重编码，以1.5倍速播放约3.22秒。"
+    },
+    {
+      "source": "drag-animation/scene.mjs",
+      "path": "assets/animations/drag/chibi/scene.js",
+      "group": "current",
+      "notes": "2026-11-02用户要求真实桌面实现，沿用当前制作预览的拖拎和探头交互；按本次实施交付，不追记此前单独采纳。"
+    },
+    {
+      "source": "drag-animation/rig.mjs",
+      "path": "assets/animations/drag/chibi/rig.js",
+      "group": "current",
+      "notes": "2026-11-02用户要求真实桌面实现，沿用当前制作预览的拖拎和探头交互；按本次实施交付，不追记此前单独采纳。"
+    },
+    {
+      "source": "drag-animation/controller.mjs",
+      "path": "assets/animations/drag/chibi/controller.js",
+      "group": "current",
+      "notes": "2026-11-02用户要求真实桌面实现，沿用当前制作预览的拖拎和探头交互；按本次实施交付，不追记此前单独采纳。"
+    },
+    {
+      "source": "desktop-states-2026-11-02/drag-chibi-v8-2p5-closed.png",
+      "path": "assets/animations/drag/chibi/textures/character.png",
+      "group": "current",
+      "notes": "2026-11-02用户要求真实桌面实现，沿用当前制作预览的拖拎和探头交互；按本次实施交付，不追记此前单独采纳。"
+    },
+    {
+      "source": "edge-animation/scene.mjs",
+      "path": "assets/animations/peek/chibi/scene.js",
+      "group": "current",
+      "notes": "2026-11-02用户要求真实桌面实现，沿用当前制作预览的拖拎和探头交互；按本次实施交付，不追记此前单独采纳。"
+    },
+    {
+      "source": "desktop-states-2026-11-02/peek-right-chibi-v3-colors.png",
+      "path": "assets/animations/peek/chibi/textures/character.png",
+      "group": "current",
+      "notes": "2026-11-02用户要求真实桌面实现，沿用当前制作预览的拖拎和探头交互；按本次实施交付，不追记此前单独采纳。"
+    },
+    {
+      "source": "interaction-animation/scenes.mjs",
+      "path": "app/runtime/interaction-scenes.js",
+      "group": "current",
+      "notes": "2026-11-02用户要求真实桌面实现，沿用当前制作预览的拖拎和探头交互；按本次实施交付，不追记此前单独采纳。"
+    },
+    {
+      "source": "https://registry.npmjs.org/pixi.js/-/pixi.js-8.22.0.tgz#package/dist/packages/unsafe-eval.min.js",
+      "path": "assets/vendor/pixi-unsafe-eval.min.js",
+      "group": "runtime",
+      "deliveredAt": "2026-11-03"
+    },
+    {
+      "source": "https://registry.npmjs.org/pixi.js/-/pixi.js-8.22.0.tgz#package/LICENSE",
+      "path": "assets/vendor/pixi.LICENSE",
+      "group": "runtime",
+      "deliveredAt": "2026-11-03"
+    },
+    {
+      "source": "repository-authored CSP integration and source notes",
+      "path": "assets/vendor/pixi-csp.txt",
+      "group": "runtime",
+      "deliveredAt": "2026-11-03"
+    }
+  ],
+  "organizationDate": "2026-11-02",
+  "assetRoot": "assets",
+  "layout": "animations/<state>/<form>/scene.js with textures/; shared/; vendor/; references/",
+  "acceptanceRecord": "docs/accepted-animations-2026-11-02.txt"
+}

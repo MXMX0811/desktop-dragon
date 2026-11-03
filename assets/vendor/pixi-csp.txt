@@ -1,0 +1,12 @@
+PixiJS 8.22.0 static CSP support
+
+Existing pixi.min.js remains the PixiJS browser runtime.
+Load pixi-unsafe-eval.min.js immediately after pixi.min.js and before initializing any renderer. This official extension installs static shader/uniform synchronization functions; it does not require adding unsafe-eval to Content-Security-Policy.
+
+Source package: https://registry.npmjs.org/pixi.js/-/pixi.js-8.22.0.tgz
+Package file: package/dist/packages/unsafe-eval.min.js
+License: package/LICENSE, retained as pixi.LICENSE
+Official extension reference: https://pixijs.com/8.x/guides/migrations/v8#custom-builds
+Official environment explanation: https://github.com/pixijs/pixijs/blob/dev/skills/pixijs-environments/SKILL.md
+
+Delivery: 2026-11-03. The official distribution file is unmodified; no separate PixiJS copy, new version or app compatibility wrapper was introduced. The source-map comment references an optional developer source map not included in runtime assets.

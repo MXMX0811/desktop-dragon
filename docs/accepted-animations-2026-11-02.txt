@@ -1,0 +1,34 @@
+2026-11-02 · 最新动画交付确认
+
+历史记录：文中制作来源位于<art-workspace>/dragon-pet，预览与检查命令保留当时工作区的写法和验证范围。当前运行入口见仓库根目录README.md，资产映射见docs/asset-catalog.md；运行无需制作目录。
+
+用户原话：
+“好的，请将最新状态的动画更新到仓库目录中。然后实现拖动状态的鼠标拖动以及四肢、尾巴、衣摆摆动。需要有惯性”
+
+确认上下文：上轮已将Q版子代理云环绕横纵半径缩小15%，预览 runtime/index.html?review=helper-radius。此前已确定两云同步转动，点击人物时有云则直接环绕，圈内重复点击继续当前圈。
+
+本次交付：
+1. 已确认的最新小云叠加动画、两张透明素材，以及仓库展示/放大审阅入口。源：subagent-animation/companions.js、companions.css；desktop-states-2026-11-02/helper-sora-v1.png、helper-codex-v1.png。目标：assets/shared/subagents/scene.js、style.css、textures/sora.png、textures/codex.png。
+2. 八组人物动画与制作源35个模块对照，除仓库目录/文件名重映射之外没有逻辑差异，沿用现有文件。原有确认与修订范围保留在asset-catalog.md。
+
+此次确认不表示新的拖动惯性动画已经完成或采用；该动作按用户本次后半项要求在制作目录实现，确认后再交付。当时探头和飞行候选仍留在制作目录；同日后续的飞行采纳单独记录如下。
+
+功能边界：当前开关是画面演练，不启动或停止子代理、不回写会话；真实活动数据尚未接入此叠加动画。
+
+2026-11-02 · 飞行60fps版本采纳
+
+用户原话：“采纳60帧版本”。
+
+确认上下文：已提供完整24fps/60fps透明飞行对照，并检查源视频与静态稿的清晰度差异。该确认采用5640源片制作的完整60fps版本；不能据此认定拖拎、扒边或原生桌面交互已经获采纳或接入。
+
+视频来源：flight-animation/qa/timing-60fps/flight-60fps.webm。
+模块来源：flight-animation/scene.mjs。
+校色来源：colors/reference-palette.mjs中的flight-chibi矩阵。
+交付目标：assets/animations/flight/chibi/scene.js、textures/flight.webm；共享色板只增加flight-chibi。
+规格：1112×834，290帧，60fps，约4.834秒，透明VP9；当前首帧对应原始5640片的0.375秒。
+
+同日后续用户要求：飞行动画加速至原来的1.5倍。仅设置飞行video.playbackRate=1.5，完整播放约3.22秒；已采纳视频文件保持60fps与约4.834秒源时长，不重编码、不改变其他状态速度。
+
+采用当前松手位置对齐：第一帧按传入眼部锚点整体平移，随后保留视频自身路径；左侧直接镜像同一视频。首尾保持完整，末两帧全透明。源片龙角越顶缺口、较柔和的发丝/睫毛细节及部分补帧翼尖残影仍存在；补帧不代表提高空间清晰度。
+
+仓库独立审阅入口：app/review/flight.html。资产已交付，原生桌面拖动、左右屏幕吸附及真实任务联动仍未接入；制作中的drag/peek未随本次交付。

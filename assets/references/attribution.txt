@@ -1,0 +1,10 @@
+Reference artwork downloaded unchanged on 2026-10-23 for the user-requested Q-version standby redraw.
+Character design / original character: ZipZipPipe. Chibi adaptation: CrossPet (lokicorvus).
+Source commit: 6e98970f6ff9b44e8ac85215241cabcd78f67d92 (CrossPet 1.3.7).
+idle.webp: https://github.com/lokicorvus/crosspet/blob/6e98970f6ff9b44e8ac85215241cabcd78f67d92/characters/gpt/idle.webp
+pat.webp: https://github.com/lokicorvus/crosspet/blob/6e98970f6ff9b44e8ac85215241cabcd78f67d92/characters/gpt/pat.webp
+Artwork license indicated by the project and linked character page: CC BY-NC-SA 4.0.
+https://github.com/lokicorvus/crosspet/blob/6e98970f6ff9b44e8ac85215241cabcd78f67d92/characters/LICENSE.md
+https://creativecommons.org/licenses/by-nc-sa/4.0/
+User-provided character gallery: https://genderswapai.com/ai-gijinka/gpt
+The gallery HTML and image attribution were inspected. No credentials or image-generation service on that website were used.

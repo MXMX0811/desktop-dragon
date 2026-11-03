@@ -1,0 +1,13 @@
+.subagent-stage{position:relative;isolation:isolate}
+.subagent-companions{position:absolute;inset:0;pointer-events:none;overflow:visible}
+.subagent-companions[hidden]{display:none!important}
+.subagent-companions *{pointer-events:none;box-sizing:border-box}
+.subagent-slot{position:absolute;left:0;top:0;width:32px;height:32px;transform-origin:0 0}
+.subagent-orbit,.subagent-arrival,.subagent-float{width:32px;height:32px;transform-origin:0 0}
+.subagent-art{position:absolute;width:32px;left:-16px;top:-14px;overflow:visible}
+.subagent-art img{position:absolute;display:block;max-width:none!important;height:auto!important;user-select:none;pointer-events:none}
+/* Align each opaque cloud body, retaining all transparent edge pixels/glow. */
+.subagent-art-sora{height:24.57px;top:-12.285px}
+.subagent-art-sora img{width:148.55%;left:-24.37%;top:-16.88%}
+.subagent-art-codex{height:28.38px;top:-14.19px}
+.subagent-art-codex img{width:153.63%;left:-27.44%;top:-25.16%}

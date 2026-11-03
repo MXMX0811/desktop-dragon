@@ -1,0 +1,52 @@
+当前动画采用记录 · 2026-10-31
+
+历史记录：文中制作来源位于<art-workspace>/dragon-pet，预览与检查命令保留当时工作区的写法和验证范围。当前运行入口见仓库根目录README.md，资产映射见docs/asset-catalog.md；运行无需制作目录。
+
+用户原话：“确认所有当前动画实现。现在进行代码框架设计。需要保证动作、状态的可扩展性。先进行架构设计，以及预期的功能。然后与我讨论方案”。
+
+采用范围：当日 runtime/index.html 实际加载的以下动画、待确认往返、点击反馈和切换效果。后续框架整理以这些实现及素材为正式基线。历史记录中的“候选”“待采纳”描述对应当时状态，本次确认覆盖下列现用版本。
+
+1. Q版陪伴／休眠／唤醒
+   入口：standby-animation/redraw/controller.js、scene.js。
+   动作与绘制：motion.js、renderer.js、face.js、sleeve.js、wings.js。
+   素材：同目录 assets/；部件和补绘来源见 README.txt。
+   掩嘴哈欠为原始速度1.5倍，完整约7.33秒。
+   待机点击眨眼并振翅1.3秒；哈欠后最终睁眼同步振翅，约5.57–6.87秒。
+   审阅：review/standby.html，与运行页共用生产实现。
+
+2. 正比阅读／待确认
+   版本：v14，双手持续握住书侧。
+   源码：reading-animation/reading-controller.js、reading-wait-rig.js、reading-scene.js。
+   运行入口：runtime/generated/reading.js；运行素材 runtime/assets/reading-*。
+   原始、补全素材：reading-animation/assets/、redraw-v14-assets/。
+   往返为最初3倍速：举书约0.667秒，另计翻页收束；放书约0.98秒。
+   审阅：review/reading.html。旧B版作为历史，正式基线为v14。
+
+3. 正比工作／待确认
+   版本：v20，自然敲键手，8张完整中间稿校准后的肩肘腕运动。
+   源码：work-animation/work-controller.js、work-head-rig.js、work-wait-rig.js、work-scene.js。
+   运行入口：runtime/generated/work.js；运行素材 runtime/assets/work-*。
+   素材与绑定：work-animation/assets/、redraw-v20/、typing-hand/。
+   往返为前一轮1.5倍速：进入约1.477秒、返回约1.653秒。
+   审阅：review/work.html。旧v17作为历史，正式基线为v20。
+
+4. Q版任务与思考
+   chibi-scenes/reading-scene.js：阅读、举书待确认及返回、点击回应。
+   chibi-scenes/work-scene.js：趴卧操作笔记本、翘腿、停键待确认及返回、点击回应。
+   chibi-scenes/thinking-scene.js：站立全身思考及点击回应。
+   chibi-scenes/drawing-scene.js：无眼镜桌前绘图、浮现图案、待确认及点击回应。
+   控制器及素材范围见 chibi-scenes/controller.js 和各场景制作记录。
+
+5. 正比绘图
+   drawing-animation/scene.js 与 assets/：无眼镜桌前绘图、浮现图案、待确认及点击回应。
+
+6. 共用表现
+   Q版与正比人物标尺200px／400px，卧姿按一致身体尺度标定，支持1000px审阅。
+   Q版待确认统一使用正比画风问号；问号轻摆，气泡完整稳定。
+   Q版与正比工作使用人物身后的低频终端效果。
+   同场景待确认往返由场景控制器执行；同比例跨场景渐变；跨比例无字圆云配合渐变。
+   右键和连续三次点击切换阅读／工作／绘图的Q版与正比。
+
+本记录登记用户确认，不新增自动测试或浏览器实播结论。既有检查见各场景README及review记录。原生窗口、真实客户端接入及Windows实测不在此次动画确认范围内。
+正比待机、休眠和思考只有静态原画，没有生产动画；此次确认不扩展其完成范围。
+本轮只更新采用记录和架构方案，没有修改动作、素材或运行代码。

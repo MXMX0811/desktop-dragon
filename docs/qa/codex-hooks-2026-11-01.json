@@ -1,0 +1,499 @@
+{
+  "date": "2026-11-01",
+  "codexVersion": "0.166.0-alpha.5.1",
+  "evidence": "Existing trusted CrossPet observer on the current native client; no raw hook input captured",
+  "configuredEvents": [
+    "SessionStart",
+    "UserPromptSubmit",
+    "PreToolUse",
+    "PostToolUse",
+    "Stop",
+    "SubagentStop",
+    "SubagentStart",
+    "PreCompact",
+    "PostCompact",
+    "Interrupt"
+  ],
+  "boundedRuns": [
+    {
+      "liveCounts": {
+        "PreToolUse": 6,
+        "PostToolUse": 5
+      },
+      "liveToolCounts": {
+        "collaborationsend_message": 4,
+        "bash": 1,
+        "mcp__node_repl__js": 2,
+        "webrun": 2,
+        "apply_patch": 2
+      },
+      "gaps": [],
+      "startedAfterSeconds": -28.052,
+      "endedAfterSeconds": 47.091
+    },
+    {
+      "liveCounts": {
+        "PreToolUse": 3,
+        "PostToolUse": 2
+      },
+      "liveToolCounts": {
+        "bash": 5
+      },
+      "gaps": [],
+      "startedAfterSeconds": 194.325,
+      "endedAfterSeconds": 214.54
+    }
+  ],
+  "eventsSinceFirstRun": [
+    {
+      "ev": "PreToolUse",
+      "tool": "collaborationsend_message",
+      "sid": "session-1",
+      "turn": true,
+      "result": "shown",
+      "detail": "gpt running",
+      "elapsedSeconds": 0.0
+    },
+    {
+      "ev": "PostToolUse",
+      "tool": "collaborationsend_message",
+      "sid": "session-1",
+      "turn": true,
+      "result": "shown",
+      "detail": "gpt thinking",
+      "elapsedSeconds": 0.09
+    },
+    {
+      "ev": "PreToolUse",
+      "tool": "collaborationsend_message",
+      "sid": "session-1",
+      "turn": true,
+      "result": "shown",
+      "detail": "gpt running",
+      "elapsedSeconds": 1.15
+    },
+    {
+      "ev": "PostToolUse",
+      "tool": "collaborationsend_message",
+      "sid": "session-1",
+      "turn": true,
+      "result": "shown",
+      "detail": "gpt thinking",
+      "elapsedSeconds": 1.22
+    },
+    {
+      "ev": "PreToolUse",
+      "tool": "bash",
+      "sid": "session-1",
+      "turn": true,
+      "result": "shown",
+      "detail": "gpt running",
+      "elapsedSeconds": 37.56
+    },
+    {
+      "ev": "PreToolUse",
+      "tool": "mcp__node_repl__js",
+      "sid": "session-1",
+      "turn": true,
+      "result": "shown",
+      "detail": "gpt running",
+      "elapsedSeconds": 38.83
+    },
+    {
+      "ev": "PostToolUse",
+      "tool": "mcp__node_repl__js",
+      "sid": "session-1",
+      "turn": true,
+      "result": "shown",
+      "detail": "gpt thinking",
+      "elapsedSeconds": 39.46
+    },
+    {
+      "ev": "PreToolUse",
+      "tool": "webrun",
+      "sid": "session-1",
+      "turn": true,
+      "result": "shown",
+      "detail": "gpt searching",
+      "elapsedSeconds": 39.5
+    },
+    {
+      "ev": "PostToolUse",
+      "tool": "webrun",
+      "sid": "session-1",
+      "turn": true,
+      "result": "shown",
+      "detail": "gpt thinking",
+      "elapsedSeconds": 42.84
+    },
+    {
+      "ev": "PreToolUse",
+      "tool": "apply_patch",
+      "sid": "session-1",
+      "turn": true,
+      "result": "shown",
+      "detail": "gpt writing",
+      "elapsedSeconds": 42.89
+    },
+    {
+      "ev": "PostToolUse",
+      "tool": "apply_patch",
+      "sid": "session-1",
+      "turn": true,
+      "result": "shown",
+      "detail": "gpt thinking",
+      "elapsedSeconds": 42.99
+    },
+    {
+      "ev": "PostToolUse",
+      "tool": "bash",
+      "sid": "session-1",
+      "turn": true,
+      "result": "shown",
+      "detail": "gpt thinking",
+      "elapsedSeconds": 96.77
+    },
+    {
+      "ev": "PreToolUse",
+      "tool": "bash",
+      "sid": "session-1",
+      "turn": true,
+      "result": "shown",
+      "detail": "gpt running",
+      "elapsedSeconds": 96.83
+    },
+    {
+      "ev": "PostToolUse",
+      "tool": "bash",
+      "sid": "session-1",
+      "turn": true,
+      "result": "shown",
+      "detail": "gpt thinking",
+      "elapsedSeconds": 97.4
+    },
+    {
+      "ev": "SubagentStop",
+      "tool": "",
+      "sid": "session-1",
+      "turn": true,
+      "result": "shown",
+      "detail": "gpt thinking",
+      "elapsedSeconds": 108.35
+    },
+    {
+      "ev": "PostToolUse",
+      "tool": "bash",
+      "sid": "session-1",
+      "turn": true,
+      "result": "shown",
+      "detail": "gpt thinking",
+      "elapsedSeconds": 126.85
+    },
+    {
+      "ev": "PreToolUse",
+      "tool": "bash",
+      "sid": "session-1",
+      "turn": true,
+      "result": "shown",
+      "detail": "gpt running",
+      "elapsedSeconds": 193.99
+    },
+    {
+      "ev": "PreToolUse",
+      "tool": "bash",
+      "sid": "session-1",
+      "turn": true,
+      "result": "shown",
+      "detail": "gpt running",
+      "elapsedSeconds": 195.25
+    },
+    {
+      "ev": "PostToolUse",
+      "tool": "bash",
+      "sid": "session-1",
+      "turn": true,
+      "result": "shown",
+      "detail": "gpt thinking",
+      "elapsedSeconds": 195.37
+    },
+    {
+      "ev": "PreToolUse",
+      "tool": "bash",
+      "sid": "session-1",
+      "turn": true,
+      "result": "shown",
+      "detail": "gpt running",
+      "elapsedSeconds": 195.41
+    },
+    {
+      "ev": "PreToolUse",
+      "tool": "bash",
+      "sid": "session-1",
+      "turn": true,
+      "result": "shown",
+      "detail": "gpt running",
+      "elapsedSeconds": 196.62
+    },
+    {
+      "ev": "PostToolUse",
+      "tool": "bash",
+      "sid": "session-1",
+      "turn": true,
+      "result": "shown",
+      "detail": "gpt thinking",
+      "elapsedSeconds": 196.75
+    },
+    {
+      "ev": "PostToolUse",
+      "tool": "bash",
+      "sid": "session-1",
+      "turn": true,
+      "result": "shown",
+      "detail": "gpt thinking",
+      "elapsedSeconds": 246.57
+    },
+    {
+      "ev": "PostToolUse",
+      "tool": "bash",
+      "sid": "session-1",
+      "turn": true,
+      "result": "shown",
+      "detail": "gpt thinking",
+      "elapsedSeconds": 246.62
+    },
+    {
+      "ev": "PreToolUse",
+      "tool": "bash",
+      "sid": "session-1",
+      "turn": true,
+      "result": "shown",
+      "detail": "gpt running",
+      "elapsedSeconds": 246.65
+    },
+    {
+      "ev": "PostToolUse",
+      "tool": "bash",
+      "sid": "session-1",
+      "turn": true,
+      "result": "shown",
+      "detail": "gpt thinking",
+      "elapsedSeconds": 246.81
+    },
+    {
+      "ev": "PreToolUse",
+      "tool": "bash",
+      "sid": "session-1",
+      "turn": true,
+      "result": "shown",
+      "detail": "gpt running",
+      "elapsedSeconds": 372.95
+    }
+  ],
+  "recentLifecycleEvidence": [
+    {
+      "ev": "SubagentStop",
+      "tool": "",
+      "sid": "session-1",
+      "turn": true,
+      "result": "shown",
+      "detail": "gpt thinking",
+      "elapsedSeconds": -28078.91
+    },
+    {
+      "ev": "PreCompact",
+      "tool": "",
+      "sid": "session-1",
+      "turn": true,
+      "result": "shown",
+      "detail": "gpt compact",
+      "elapsedSeconds": -27986.36
+    },
+    {
+      "ev": "PostCompact",
+      "tool": "",
+      "sid": "session-1",
+      "turn": true,
+      "result": "shown",
+      "detail": "gpt thinking",
+      "elapsedSeconds": -27903.15
+    },
+    {
+      "ev": "PreCompact",
+      "tool": "",
+      "sid": "session-1",
+      "turn": true,
+      "result": "shown",
+      "detail": "gpt compact",
+      "elapsedSeconds": -27574.55
+    },
+    {
+      "ev": "SubagentStop",
+      "tool": "",
+      "sid": "session-1",
+      "turn": true,
+      "result": "shown",
+      "detail": "gpt thinking",
+      "elapsedSeconds": -27516.55
+    },
+    {
+      "ev": "PostCompact",
+      "tool": "",
+      "sid": "session-1",
+      "turn": true,
+      "result": "shown",
+      "detail": "gpt thinking",
+      "elapsedSeconds": -27263.7
+    },
+    {
+      "ev": "SessionStart",
+      "tool": "",
+      "sid": "session-1",
+      "turn": false,
+      "result": "dropped",
+      "detail": "session-restart",
+      "elapsedSeconds": -27263.66
+    },
+    {
+      "ev": "SubagentStop",
+      "tool": "",
+      "sid": "session-1",
+      "turn": true,
+      "result": "shown",
+      "detail": "gpt thinking",
+      "elapsedSeconds": -26963.14
+    },
+    {
+      "ev": "Stop",
+      "tool": "",
+      "sid": "session-1",
+      "turn": true,
+      "result": "shown",
+      "detail": "gpt proud",
+      "elapsedSeconds": -26169.97
+    },
+    {
+      "ev": "SessionStart",
+      "tool": "",
+      "sid": "session-2",
+      "turn": false,
+      "result": "dropped",
+      "detail": "codex-suggestion",
+      "elapsedSeconds": -26151.65
+    },
+    {
+      "ev": "UserPromptSubmit",
+      "tool": "",
+      "sid": "session-2",
+      "turn": true,
+      "result": "dropped",
+      "detail": "codex-suggestion",
+      "elapsedSeconds": -26151.06
+    },
+    {
+      "ev": "Interrupt",
+      "tool": "",
+      "sid": "session-2",
+      "turn": true,
+      "result": "dropped",
+      "detail": "codex-suggestion",
+      "elapsedSeconds": -26139.14
+    },
+    {
+      "ev": "SessionStart",
+      "tool": "",
+      "sid": "session-3",
+      "turn": false,
+      "result": "dropped",
+      "detail": "codex-suggestion",
+      "elapsedSeconds": -1924.55
+    },
+    {
+      "ev": "UserPromptSubmit",
+      "tool": "",
+      "sid": "session-3",
+      "turn": true,
+      "result": "dropped",
+      "detail": "codex-suggestion",
+      "elapsedSeconds": -1923.96
+    },
+    {
+      "ev": "Stop",
+      "tool": "",
+      "sid": "session-3",
+      "turn": true,
+      "result": "dropped",
+      "detail": "codex-suggestion",
+      "elapsedSeconds": -1820.39
+    },
+    {
+      "ev": "SessionStart",
+      "tool": "",
+      "sid": "session-4",
+      "turn": false,
+      "result": "dropped",
+      "detail": "codex-suggestion",
+      "elapsedSeconds": -415.63
+    },
+    {
+      "ev": "UserPromptSubmit",
+      "tool": "",
+      "sid": "session-4",
+      "turn": true,
+      "result": "dropped",
+      "detail": "codex-suggestion",
+      "elapsedSeconds": -415.05
+    },
+    {
+      "ev": "Interrupt",
+      "tool": "",
+      "sid": "session-4",
+      "turn": true,
+      "result": "dropped",
+      "detail": "codex-suggestion",
+      "elapsedSeconds": -409.85
+    },
+    {
+      "ev": "SessionStart",
+      "tool": "",
+      "sid": "session-1",
+      "turn": false,
+      "result": "dropped",
+      "detail": "session-restart",
+      "elapsedSeconds": -404.76
+    },
+    {
+      "ev": "UserPromptSubmit",
+      "tool": "",
+      "sid": "session-1",
+      "turn": true,
+      "result": "shown",
+      "detail": "gpt listening",
+      "elapsedSeconds": -404.6
+    },
+    {
+      "ev": "SubagentStart",
+      "tool": "",
+      "sid": "session-1",
+      "turn": true,
+      "result": "shown",
+      "detail": "gpt delegating",
+      "elapsedSeconds": -208.94
+    },
+    {
+      "ev": "SubagentStop",
+      "tool": "",
+      "sid": "session-1",
+      "turn": true,
+      "result": "shown",
+      "detail": "gpt thinking",
+      "elapsedSeconds": 108.35
+    }
+  ],
+  "notes": [
+    "Privacy edit: session-N values are stable anonymous labels, not original IDs. All time values are seconds relative to the first eventsSinceFirstRun event; negative values precede it. Event order, intervals and counts are preserved. Original logs remain local and are not included.",
+    "This observer normalizes tool names and omits exact turn/tool/agent identifiers.",
+    "CrossPet result/detail are observer decisions, not native Codex state.",
+    "Historical Stop/Interrupt include suggestion sessions; not a controlled root-turn completion test.",
+    "The diagnostic command itself also generates Bash hook events."
+  ]
+}

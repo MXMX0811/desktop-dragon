@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self'; worker-src 'self' blob:; object-src 'none'; base-uri 'none'">
+<title>Desktop Dragon</title>
+<link rel="stylesheet" href="../../assets/shared/subagents/style.css">
+<link rel="stylesheet" href="./style.css">
+<script src="../../assets/vendor/pixi.min.js"></script>
+<script src="../../assets/vendor/pixi-unsafe-eval.min.js"></script>
+<script type="module" src="./app.js"></script>
+</head>
+<body>
+<div id="stage">
+ <div id="characters"></div>
+ <div id="cloud" hidden></div>
+ <aside id="panel" hidden aria-label="会话活动">
+  <div class="panel-heading"><strong>会话活动</strong><button id="close-panel" aria-label="关闭会话活动">×</button></div>
+  <section id="connection" aria-label="Codex 状态采集">
+   <div class="connection-heading"><strong>Codex 状态采集</strong><span id="connection-status">状态未知</span></div>
+   <p id="connection-hint"></p>
+   <dl class="connection-details">
+    <dt>最近记录（含历史）</dt><dd id="connection-received">暂无</dd>
+    <dt>本次接收</dt><dd id="connection-count">未知</dd>
+    <dt>钩子注册</dt><dd id="connection-registration">未知</dd>
+   </dl>
+   <p id="connection-error" class="connection-error" hidden></p>
+   <p id="registration-error" class="connection-error" hidden></p>
+  </section>
+  <p id="panel-mode"></p><div id="sessions"></div>
+  <p class="footnote">只读显示。当前入口不提供额度和待办内容；请在原客户端查询和处理。</p>
+ </aside>
+ <div id="error" role="alert" hidden></div>
+</div>
+</body>
+</html>

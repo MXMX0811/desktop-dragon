@@ -1,0 +1,30 @@
+# Dependencies and generated application bundles
+node_modules/
+/out/
+/dist/
+
+# Private runtime data and local configuration
+/.local/
+/.codex/
+.env
+.env.*
+!.env.example
+.npmrc
+/app/runtime/bridge/session.json
+
+# Test output, logs and caches
+/coverage/
+.nyc_output/
+*.log
+*.pid
+.cache/
+__pycache__/
+*.py[cod]
+.venv/
+
+# Editor and operating-system files
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+Desktop.ini

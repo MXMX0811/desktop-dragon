@@ -1,0 +1,53 @@
+{
+  "parts": {
+    "chair": {
+      "x": 256,
+      "y": 194,
+      "width": 812,
+      "height": 1060,
+      "file": "chair.png"
+    },
+    "chairFront": {
+      "x": 256,
+      "y": 750,
+      "width": 710,
+      "height": 100,
+      "file": "chairFront.png"
+    },
+    "keyboard": {
+      "x": 310,
+      "y": 672,
+      "width": 420,
+      "height": 180,
+      "file": "keyboard.png"
+    },
+    "screen": {
+      "x": 310,
+      "y": 672,
+      "width": 315,
+      "height": 178,
+      "file": "screen.png"
+    },
+    "armLeft": {
+      "x": 290,
+      "y": 615,
+      "width": 305,
+      "height": 415,
+      "file": "armLeft.png"
+    },
+    "armRight": {
+      "x": 590,
+      "y": 615,
+      "width": 455,
+      "height": 415,
+      "file": "armRight.png"
+    },
+    "headFront": {
+      "x": 420,
+      "y": 560,
+      "width": 365,
+      "height": 175,
+      "file": "headFront.png"
+    }
+  }
+}

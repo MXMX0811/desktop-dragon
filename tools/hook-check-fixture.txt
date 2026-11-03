@@ -1,0 +1,3 @@
+desktop-dragon hook observation fixture
+This file exists only to exercise a real apply_patch event and a read command.
+Observed test phase: file edit, shell execution, web tool, MCP tool, subagent.

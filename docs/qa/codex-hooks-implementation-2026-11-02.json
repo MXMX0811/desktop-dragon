@@ -1,0 +1,111 @@
+{
+  "date": "2026-11-02",
+  "platform": "macOS",
+  "scope": "Independent Codex hook receiver; no animation integration",
+  "registration": {
+    "events": 12,
+    "trust": "reviewed through official Codex startup UI; verified trusted with hooks/list"
+  },
+  "cli": {
+    "verified": true,
+    "events": 10,
+    "pairedTools": 3,
+    "tools": [
+      "Bash",
+      "apply_patch"
+    ],
+    "timeline": [
+      {
+        "event": "SessionStart",
+        "state": "unknown",
+        "activeTools": 0
+      },
+      {
+        "event": "UserPromptSubmit",
+        "state": "activity_observed",
+        "activeTools": 0
+      },
+      {
+        "event": "PreToolUse",
+        "tool": "Bash",
+        "state": "tool_running",
+        "activeTools": 1
+      },
+      {
+        "event": "PostToolUse",
+        "tool": "Bash",
+        "state": "activity_observed",
+        "activeTools": 0
+      },
+      {
+        "event": "PreToolUse",
+        "tool": "apply_patch",
+        "state": "tool_running",
+        "activeTools": 1
+      },
+      {
+        "event": "PostToolUse",
+        "tool": "apply_patch",
+        "state": "activity_observed",
+        "activeTools": 0
+      },
+      {
+        "event": "PreToolUse",
+        "tool": "Bash",
+        "state": "tool_running",
+        "activeTools": 1
+      },
+      {
+        "event": "PostToolUse",
+        "tool": "Bash",
+        "state": "activity_observed",
+        "activeTools": 0
+      },
+      {
+        "event": "Stop",
+        "state": "stop_observed",
+        "activeTools": 0
+      },
+      {
+        "event": "SessionEnd",
+        "state": "session_ended",
+        "activeTools": 0
+      }
+    ],
+    "process_exit_code": 0
+  },
+  "desktop_resumed_session": {
+    "originator": "Codex Desktop",
+    "origin_evidence": "session_meta only; no conversation content read",
+    "events": 49,
+    "paired_tools": 23,
+    "peak_parallel_tools": 3,
+    "tool_counts": {
+      "Bash": 20,
+      "view_image": 1,
+      "mcp__codex_app__load_workspace_dependencies": 1,
+      "webrun": 1
+    },
+    "event_counts": {
+      "SessionStart": 1,
+      "UserPromptSubmit": 1,
+      "PreToolUse": 23,
+      "PostToolUse": 23,
+      "Stop": 1
+    },
+    "final_observation": "stop_observed"
+  },
+  "tests": {
+    "total": 32,
+    "passed": 32,
+    "failed": 0,
+    "hook_tests": 15
+  },
+  "pending": [
+    "Current long-running task chat has not loaded new hooks",
+    "Controlled simultaneous sessions and parent/subagent ID correlation",
+    "Permission request and resolution lifecycle",
+    "Controlled compaction and interruption",
+    "Windows runtime and long-term resource measurements"
+  ]
+}

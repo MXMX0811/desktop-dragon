@@ -1,0 +1,26 @@
+{
+  "name": "desktop-dragon",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "main": "desktop/main/index.mjs",
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "scripts": {
+    "start": "electron .",
+    "package": "node tools/package.mjs",
+    "preview": "python3 tools/preview.py",
+    "test": "node --test app/runtime/state.test.cjs app/runtime/display-policy.test.cjs app/runtime/pet-interaction.test.cjs app/desktop/*.test.mjs desktop/main/*.test.mjs desktop/codex-hooks/*.test.mjs",
+    "hooks:status": "node desktop/codex-hooks/status.mjs",
+    "hooks:watch": "node desktop/codex-hooks/status.mjs --watch",
+    "test:hooks": "node --test desktop/codex-hooks/*.test.mjs"
+  },
+  "devDependencies": {
+    "@electron/packager": "20.3.0",
+    "electron": "45.2.1"
+  },
+  "dependencies": {
+    "shell-quote": "1.12.0"
+  }
+}
