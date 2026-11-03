@@ -9,7 +9,7 @@ const names={standby:'待机',sleep:'休眠',reading:'阅读',work:'工作',draw
 // Review controls and fictional quota only; no account or session connection.
 let loaded=false;
 let host,special,container,companions,pose='work',scene='work',form='chibi';
-let kind=null,nextLine=0,selectedLine=null,caption='',timer=null,effect=null,generation=0,disposed=false,dragFrame=0;
+let kind=null,nextLine=0,selectedLine=null,caption='',timer=null,effect=null,showing=false,generation=0,disposed=false,dragFrame=0;
 const ready=()=>loaded;
 const group=()=>special?'edge':$('waiting').checked?'waiting':$('agents').checked?'subagents':scene;
 
@@ -40,34 +40,57 @@ function updateStatus(){
 }
 function armTimer(){
  clearTimeout(timer);timer=null;
- if(kind&&!$('pin').checked)timer=setTimeout(hide,kind==='info'?6000:5000);
+ if(kind&&!showing&&!$('pin').checked)timer=setTimeout(hide,kind==='info'?6000:5000);
  updateStatus();
 }
-function present(nextKind){
- const opening=bubble.hidden;
- effect?.cancel();clearTimeout(timer);kind=nextKind;bubble.hidden=false;position();
- const reduced=matchMedia('(prefers-reduced-motion:reduce)').matches;
- effect=(opening?bubble:content).animate(opening?[
-  {opacity:0,transform:'translateY(4px)'},{opacity:1,transform:'translateY(0)'}
- ]:[{opacity:.35},{opacity:1}],{duration:reduced?0:opening?180:100,easing:'cubic-bezier(.2,.7,.3,1)'});
- armTimer();
+function currentAppearance(){
+ const style=getComputedStyle(bubble);
+ return {opacity:style.opacity,transform:style.transform};
+}
+function animateBubble(frames,duration,easing,finish){
+ effect?.cancel();
+ const animation=bubble.animate(frames,{
+  duration:matchMedia('(prefers-reduced-motion:reduce)').matches?0:duration,
+  easing,fill:'both',
+ });
+ effect=animation;
+ animation.onfinish=()=>{
+  if(effect!==animation)return;
+  // Keep the last frame applied until the next animation or hidden state is ready.
+  finish();
+  if(effect===animation){effect=null;animation.cancel();}
+ };
+}
+function present(nextKind,render){
+ const opening=bubble.hidden,from=opening?null:currentAppearance();
+ clearTimeout(timer);timer=null;kind=nextKind;showing=true;updateStatus();
+ const enter=()=>{
+  render();bubble.hidden=false;position();
+  // Reposition while invisible; growing from the tail keeps the response attached to the pet.
+  animateBubble([
+   {opacity:0,transform:'translateY(7px) scale(.9)',offset:0},
+   {opacity:1,transform:'translateY(-1px) scale(1.025)',offset:.7},
+   {opacity:1,transform:'translateY(0) scale(1)',offset:1},
+  ],300,'cubic-bezier(.22,.7,.3,1)',()=>{showing=false;armTimer();});
+ };
+ if(opening)enter();
+ else animateBubble([from,{opacity:0,transform:'translateY(4px) scale(.94)'}],140,'ease-in',enter);
 }
 function hide(){
- clearTimeout(timer);timer=null;kind=null;nextLine=0;selectedLine=null;effect?.cancel();
- const animation=bubble.animate([{opacity:1,transform:'translateY(0)'},{opacity:0,transform:'translateY(3px)'}],{duration:matchMedia('(prefers-reduced-motion:reduce)').matches?0:160,easing:'ease-out'});
- effect=animation;animation.onfinish=()=>{if(effect!==animation)return;bubble.hidden=true;animation.cancel();effect=null;};updateStatus();
+ clearTimeout(timer);timer=null;kind=null;showing=false;nextLine=0;selectedLine=null;
+ animateBubble([currentAppearance(),{opacity:0,transform:'translateY(7px) scale(.9)'}],210,'cubic-bezier(.4,0,.8,.4)',()=>{bubble.hidden=true;});updateStatus();
 }
 function showInfo(){
  if(!ready())return;
  nextLine=0;selectedLine=null;caption='剩余额度示例';const sample=$('sample').value;
- bubble.classList.toggle('low',sample==='low');
  const heading='<span class="title quota-title">剩余额度<span class="sample-tag">示例</span></span>';
- if(sample==='missing')content.innerHTML=`<div class="bubble-heading">${heading}</div><p class="no-data">账户用量暂无数据</p>`;
+ let markup;
+ if(sample==='missing')markup=`<div class="bubble-heading">${heading}</div><p class="no-data">账户用量暂无数据</p>`;
  else{
   const remaining=sample==='low'?12:72;
-  content.innerHTML=`<div class="bubble-heading">${heading}<span class="amount">${remaining}<small>%</small></span></div><div class="meter" style="--remaining:${remaining}%" aria-label="剩余${remaining}%"><span></span></div><p class="reset">${sample==='low'?'38 分钟':'2 小时 12 分钟'}后重置</p>`;
+  markup=`<div class="bubble-heading">${heading}<span class="amount">${remaining}<small>%</small></span></div><div class="meter" style="--remaining:${remaining}%" aria-label="剩余${remaining}%"><span></span></div><p class="reset">${sample==='low'?'38 分钟':'2 小时 12 分钟'}后重置</p>`;
  }
- present('info');
+ present('info',()=>{bubble.classList.toggle('low',sample==='low');content.innerHTML=markup;});
 }
 function showText(text){
  const p=document.createElement('p');p.className='dialogue';
@@ -75,7 +98,7 @@ function showText(text){
  for(const phrase of text.match(/[^，。！？～…]+[，。！？～…]*|[，。！？～…]+/gu)){
   const span=document.createElement('span');span.className='phrase';span.textContent=phrase;p.append(span);
  }
- content.replaceChildren(p);bubble.classList.remove('low');present('dialogue');
+ present('dialogue',()=>{content.replaceChildren(p);bubble.classList.remove('low');});
 }
 function showLine(index){
  if(!ready())return;
@@ -119,7 +142,7 @@ function runDrag(){
  };dragFrame=requestAnimationFrame(tick);
 }
 async function load(){
- const id=++generation;loaded=false;clearTimeout(timer);effect?.cancel();cancelAnimationFrame(dragFrame);kind=null;nextLine=0;selectedLine=null;bubble.hidden=true;
+ const id=++generation;loaded=false;clearTimeout(timer);effect?.cancel();effect=null;showing=false;cancelAnimationFrame(dragFrame);kind=null;nextLine=0;selectedLine=null;bubble.hidden=true;
  $('error').hidden=true;$('loading').hidden=false;
  for(const key of ['next','show-info','show-easter'])$(key).disabled=true;
  $('line-options').replaceChildren();companions?.destroy();companions=null;host?.destroy();host=null;special?.scene.destroy();special=null;container=null;pet.replaceChildren();
