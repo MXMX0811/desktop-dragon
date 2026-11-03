@@ -2,9 +2,10 @@
 export const dualFormScenes=new Set(['reading','work','drawing']);
 const baseSizes={chibi:200,normal:400};
 // Keep each scene's existing body calibration; these are not canvas heights.
+// Apply the same 90% reduction to task, drag, flight and edge poses.
 export function displaySize(scene,form){
  const ratio=scene==='flight' ? .8*.95 : ['thinking','drag'].includes(scene) ? .8 : .9;
- return baseSizes[form]*ratio;
+ return baseSizes[form]*ratio*.9;
 }
 // Generic gaps in a normal-form task keep the last set, so individual tools do
 // not repeatedly shrink and grow the character. The activity label stays live.

@@ -3,7 +3,7 @@ const ASSETS = [
   {name: 'codex', file: 'codex.png', duration: 900, period: 5200, phase: 1900},
 ];
 const ORBIT_START = 3500, ORBIT_PERIOD = 18000;
-const ORBIT_DURATION = 6000, BANK_DURATION = 500;
+const ORBIT_DURATION = 4000, BANK_DURATION = 500 / 1.5;
 
 // Height recovers scene.resize(size). Left/right are cloud rest centres beside
 // the body at shoulder height, excluding canvas padding and distant desk edges.
@@ -146,7 +146,7 @@ export class SubagentCompanions {
     const origin = this.stage.getBoundingClientRect();
     const frame = FRAMES[`${this.scene}:${this.form}`];
     const displaySize = rect.height / frame.height;
-    const size = displaySize * (this.form === 'normal' ? .12 : .17);
+    const size = displaySize * (this.form === 'normal' ? .12 : .17) * 1.22;
     const left = rect.left - origin.left - this.stage.clientLeft + this.stage.scrollLeft;
     const top = rect.top - origin.top - this.stage.clientTop + this.stage.scrollTop;
     const positions = [
