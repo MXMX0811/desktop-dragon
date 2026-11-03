@@ -567,11 +567,6 @@
       "group": "current"
     },
     {
-      "source": "runtime/app.js",
-      "path": "app/runtime/app.js",
-      "group": "current"
-    },
-    {
       "source": "runtime/assets/reading-blink.webp",
       "path": "assets/animations/reading/normal/textures/blink.webp",
       "group": "current"
@@ -707,11 +702,6 @@
       "group": "current"
     },
     {
-      "source": "runtime/demo.js",
-      "path": "app/runtime/demo.js",
-      "group": "current"
-    },
-    {
       "source": "runtime/display-policy.js",
       "path": "app/runtime/display-policy.js",
       "group": "current"
@@ -732,11 +722,6 @@
       "group": "current"
     },
     {
-      "source": "runtime/index.html",
-      "path": "app/runtime/index.html",
-      "group": "current"
-    },
-    {
       "source": "runtime/package.json",
       "path": "app/runtime/package.json",
       "group": "current"
@@ -749,21 +734,6 @@
     {
       "source": "runtime/scene-fade.js",
       "path": "app/runtime/scene-fade.js",
-      "group": "current"
-    },
-    {
-      "source": "runtime/state.js",
-      "path": "app/runtime/state.js",
-      "group": "current"
-    },
-    {
-      "source": "runtime/state.test.cjs",
-      "path": "app/runtime/state.test.cjs",
-      "group": "current"
-    },
-    {
-      "source": "runtime/styles.css",
-      "path": "app/runtime/styles.css",
       "group": "current"
     },
     {
@@ -845,21 +815,6 @@
       "source": "work-animation/work-terminals.js",
       "path": "assets/shared/work-terminals.js",
       "group": "current"
-    },
-    {
-      "source": "runtime/bridge/codex_stream.py",
-      "path": "app/runtime/bridge/codex_stream.py",
-      "group": "software-baseline"
-    },
-    {
-      "source": "runtime/bridge/example-events.jsonl",
-      "path": "app/runtime/bridge/example-events.jsonl",
-      "group": "software-baseline"
-    },
-    {
-      "source": "runtime/bridge/test_codex_stream.py",
-      "path": "app/runtime/bridge/test_codex_stream.py",
-      "group": "software-baseline"
     },
     {
       "path": "assets/references/attribution.txt",

@@ -10,7 +10,6 @@ node_modules/
 .env.*
 !.env.example
 .npmrc
-/app/runtime/bridge/session.json
 
 # Test output, logs and caches
 /coverage/

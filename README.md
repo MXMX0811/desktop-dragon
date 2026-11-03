@@ -63,7 +63,7 @@ npm start
 
 主进程每秒检查新事件。应用启动前的记录归为历史；关闭采集后停止新增记录和轮询，人物回到待机；重新开启只观察新活动。面板区分最近事件、本次接收量和注册项数，注册存在不代表已受信或当前聊天已连接。
 
-事件仅记录必要元数据，不保存提示词、命令正文、工具结果或凭据。完整会话及调用标识仅保留在本地，`.local/`不提交、不打包，也不通过资源协议或预览服务器提供。`Stop`表示已观察停止，不代表成功；`PermissionRequest`不能单独证明正在等待审批。
+事件仅记录必要元数据，不保存提示词、命令正文、工具结果或凭据。完整会话及调用标识仅保留在本地，`.local/`不提交、不打包，也不通过资源协议提供。`Stop`表示已观察停止，不代表成功；`PermissionRequest`不能单独证明正在等待审批。
 
 在仓库根目录查询开发数据：
 
@@ -76,21 +76,12 @@ npm run hooks:watch
 
 ```sh
 npm test
-python3 -m unittest discover -s app/runtime/bridge -p 'test_*.py'
 npm run package
 ```
 
-GitHub Actions 在每次推送和拉取请求运行同一组 Node 与 Python 测试。Python 3 仅用于 JSONL 桥测试及浏览器预览。打包使用锁定版本的 Electron Packager，在 `out/` 生成当前主机平台的应用。
+GitHub Actions 在每次推送和拉取请求运行同一组 Node 测试。打包使用锁定版本的 Electron Packager，在 `out/` 生成当前主机平台的应用。
 
 发布时同步`package.json`与锁文件版本，准备`docs/releases/{版本号}.md`，提交后推送对应的`v{版本号}`标签。发布工作流在macOS arm64完成测试、打包与上传，再公开Release；带`alpha`、`beta`等后缀的版本标记为预发布。
-
-浏览器动画审阅：
-
-```sh
-npm run preview
-```
-
-打开[状态展示](http://127.0.0.1:55888/runtime/index.html)或[动画检查](http://127.0.0.1:55888/runtime/inspect.html)。浏览器预览用于查看人物动作与状态切换。
 
 ## 模块与设计记录
 
@@ -99,7 +90,7 @@ npm run preview
 | 原生窗口、托盘、资源协议、只读来源观察 | `desktop/main/` |
 | 有限 IPC 接口 | `desktop/preload/` |
 | 桌面人物宿主、面板、屏幕坐标与命中区域 | `app/desktop/` |
-| 共用状态策略、交互、动画宿主及审阅页面 | [app/runtime/](app/runtime/README.md) |
+| 共用状态策略、交互和动画宿主 | [app/runtime/](app/runtime/README.md) |
 | 钩子接收、采集开关、事实归并与查询 | [desktop/codex-hooks/](desktop/codex-hooks/README.md) |
 | 状态动画与贴图 | `assets/animations/{state}/{form}/scene.js`、`textures/` |
 | 共用部件与运行库 | `assets/shared/`、`assets/vendor/` |
