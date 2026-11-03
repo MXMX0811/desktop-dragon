@@ -6,12 +6,13 @@ import {DIALOGUES,EASTER_EGGS} from '../runtime/dialogue-lines.js';
 
 const $=id=>document.getElementById(id),stage=$('stage'),pet=$('pet'),bubble=$('bubble'),content=$('bubble-content');
 const names={standby:'待机',sleep:'休眠',reading:'阅读',work:'工作',drawing:'绘图动作预览',thinking:'思考',drag:'拖动姿态','peek-left':'左侧扒边','peek-right':'右侧扒边'};
+const holdMs={info:4000,dialogue:3000};
 // Review controls and fictional quota only; no account or session connection.
 let loaded=false;
 let host,special,container,companions,pose='work',scene='work',form='chibi';
 let kind=null,nextLine=0,selectedLine=null,caption='',timer=null,effect=null,showing=false,generation=0,disposed=false,dragFrame=0;
 const ready=()=>loaded;
-const group=()=>special?'edge':$('waiting').checked?'waiting':$('agents').checked?'subagents':scene;
+const group=()=>special?special.kind:$('waiting').checked?'waiting':$('agents').checked?'subagents':pose;
 
 function position(){
  if(!container)return;
@@ -35,12 +36,12 @@ function position(){
  bubble.style.setProperty('--tail-x',`${Math.max(19,Math.min(bubble.offsetWidth-19,eye.x-left))}px`);
 }
 function updateStatus(){
- $('status').textContent=!kind?'气泡已收起 · 再次点击显示信息':`${caption} · ${$('pin').checked?'已固定':kind==='info'?'6秒后收起':'5秒后收起'}`;
+ $('status').textContent=!kind?'气泡已收起 · 再次点击显示信息':`${caption} · ${$('pin').checked?'已固定':`${holdMs[kind]/1000}秒后收起`}`;
  for(const [index,button] of [...$('line-options').children].entries())button.setAttribute('aria-pressed',String(kind==='dialogue'&&selectedLine===index));
 }
 function armTimer(){
  clearTimeout(timer);timer=null;
- if(kind&&!showing&&!$('pin').checked)timer=setTimeout(hide,kind==='info'?6000:5000);
+ if(kind&&!showing&&!$('pin').checked)timer=setTimeout(hide,holdMs[kind]);
  updateStatus();
 }
 function currentAppearance(){
@@ -103,10 +104,11 @@ function showText(text){
 function showLine(index){
  if(!ready())return;
  const entry=DIALOGUES[group()];selectedLine=index;nextLine=(index+1)%entry.lines.length;
- caption=`${entry.label} · 台词 ${index+1}/3`;showText(entry.lines[index]);
+ caption=`${entry.label} · 台词 ${index+1}/${entry.lines.length}`;showText(entry.lines[index]);
 }
 function reviewLines(){
- const entry=DIALOGUES[group()];$('dialogue-label').textContent=`${entry.label} · 三句预置对话`;
+ const entry=DIALOGUES[group()];$('dialogue-label').textContent=`${entry.label} · ${entry.lines.length}句预置对话`;
+ $('line-options').style.setProperty('--line-count',entry.lines.length);
  $('context-note').textContent=$('waiting').checked&&$('agents').checked?'待确认台词优先，小云朵继续陪伴':`正在检视${entry.label}台词`;
  $('line-options').replaceChildren(...entry.lines.map((text,index)=>{
   const button=document.createElement('button');button.type='button';button.setAttribute('aria-pressed','false');
@@ -124,6 +126,7 @@ function feedback(){
  if(host){
   if(pose==='sleep'){
    host.setSleeping(false);pose='standby';$('scene').value='standby';$('scale-label').textContent='当前桌面尺寸 · Q 版 · 待机';
+   nextLine=0;selectedLine=null;reviewLines();
   }else host.touch();
  }else if(special.kind==='drag')special.scene.move(10,-4,.1);
  companions?.triggerOrbit();
@@ -175,7 +178,7 @@ async function load(){
   }
   $('scale-label').textContent=`当前桌面尺寸 · ${nextForm==='chibi'?'Q 版':'正比'} · ${names[nextPose]}`;
   $('stage-scroll').scrollLeft=nextPose==='peek-left'?0:nextPose==='peek-right'?stage.clientWidth-$('stage-scroll').clientWidth:(stage.clientWidth-$('stage-scroll').clientWidth)/2;
-  $('stage-hint').textContent=special?'姿态定点预览 · 点击轮换台词':'点击龙娘 · 轮换当前状态的三句台词';
+  $('stage-hint').textContent=special?'姿态定点预览 · 点击查看当前状态台词':'点击龙娘 · 查看当前状态台词';
   $('loading').hidden=true;loaded=true;for(const key of ['next','show-info','show-easter'])$(key).disabled=false;syncContext();
  }catch(error){if(id!==generation||disposed)return;$('loading').hidden=true;$('error').hidden=false;$('error').textContent=`预览加载失败：${error.message}`;}
 }

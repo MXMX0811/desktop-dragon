@@ -1,13 +1,15 @@
 // User-provided dialogue. These lines express the character, not session facts.
 export const DIALOGUES={
- standby:{label:'待机 / 休眠',lines:['呼噜……再睡五分钟……','诶？主人在叫我吗？','嘿嘿，我在这里哦～']},
+ standby:{label:'待机',lines:['诶？主人在叫我吗？','嘿嘿，我在这里哦～']},
+ sleep:{label:'休眠',lines:['呼噜……再睡五分钟……']},
  thinking:{label:'思考',lines:['唔……让我想想……','好像有点头绪了！','脑袋正在转圈圈……']},
  reading:{label:'阅读',lines:['翻翻看这里有没有答案～','这本书好厚呀……','找到有趣的东西了！']},
  work:{label:'工作',lines:['噼里啪啦！努力工作中！','这段代码看起来有点眼熟……','主人不许偷看我的屏幕！']},
  drawing:{label:'绘图',lines:['再添一点颜色……','嘿嘿，猜猜我在画什么？','这里要画得漂亮一点！']},
  waiting:{label:'待确认',lines:['主人，这里需要你看一眼哦～','我先在这里等你啦。','唔……这个得由主人决定。']},
  subagents:{label:'子代理',lines:['小云朵们出发啦！','大家一起帮忙，嘿咻！','不要转晕了呀，小云朵～']},
- edge:{label:'拖动 / 扒边',lines:['哇哇！要飞起来啦！','嘿嘿，被发现啦！','我就在这里偷偷看着～']},
+ drag:{label:'拖动',lines:['哇哇！要飞起来啦！']},
+ peek:{label:'扒边',lines:['嘿嘿，被发现啦！','我就在这里偷偷看着～']},
 };
 
 export const EASTER_EGGS=[
