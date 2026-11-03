@@ -19,14 +19,14 @@ let host,companions,scene='work',form='chibi',kind=null,line=0,timer=null,effect
 function position(){
  if(!host)return;
  const width=host.container.offsetWidth,height=host.container.offsetHeight;
- stage.style.height=`${Math.max(560,height+64+42+20+(bubble.hidden?0:bubble.offsetHeight))}px`;
+ stage.style.height=`${Math.max(560,height+64+42+10+(bubble.hidden?0:bubble.offsetHeight))}px`;
  pet.style.left=`${(stage.clientWidth-width)/2}px`;
  pet.style.top=`${stage.clientHeight-64-height}px`;
  if(bubble.hidden)return;
  const eye=taskEye({scene,form},pet,stage),r=pet.getBoundingClientRect(),s=stage.getBoundingClientRect();
  const left=Math.max(12,Math.min(stage.clientWidth-bubble.offsetWidth-12,eye.x-bubble.offsetWidth/2));
  bubble.style.left=`${left}px`;
- bubble.style.top=`${Math.max(42,r.top-s.top-bubble.offsetHeight-20)}px`;
+ bubble.style.top=`${Math.max(42,r.top-s.top-bubble.offsetHeight-10)}px`;
  bubble.style.setProperty('--tail-x',`${Math.max(19,Math.min(bubble.offsetWidth-19,eye.x-left))}px`);
 }
 function updateStatus(){
@@ -57,7 +57,7 @@ function showInfo(){
  if(!host)return;
  line=0;const sample=$('sample').value;
  bubble.classList.toggle('low',sample==='low');
- const heading='<span class="title"><span class="spark" aria-hidden="true">✧</span>剩余额度<span class="sample-tag">示例</span></span>';
+ const heading='<span class="title quota-title">剩余额度<span class="sample-tag">示例</span></span>';
  if(sample==='missing')show(`<div class="bubble-heading">${heading}</div><p class="no-data">账户用量暂无数据</p>`,'info');
  else{
   const remaining=sample==='low'?12:72;
