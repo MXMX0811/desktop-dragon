@@ -85,9 +85,13 @@ function touch(count,kind='normal'){
  idleSleep.restart();
  if(kind==='peek'){bubble.click(bubbleContext());return;}
  const displayed=presenter.current.view,canChangeForm=dualFormScenes.has(displayed.scene);
+ if(displayed.sleeping||presenter.current.animation.frame.state==='waking'){
+  bubble.hide({immediate:true});
+  if(displayed.sleeping)setView({...view,sleeping:false});
+  return;
+ }
  if(count===3&&canChangeForm){bubble.hide({immediate:true});changeForm();return;}
- if(displayed.sleeping)setView({...view,sleeping:false});
- else if(count<=3){presenter.touch();companions.triggerOrbit();}
+ if(count<=3){presenter.touch();companions.triggerOrbit();}
  bubble.click(bubbleContext(),{count,canChangeForm});
 }
 function changeForm(){

@@ -10,5 +10,6 @@
 .speech-bubble .quota-meter{height:4px;border-radius:4px;overflow:hidden;background:#ece3f3;margin:7px 0}.speech-bubble .quota-meter span{display:block;height:100%;width:var(--remaining);background:#a88ac1;border-radius:inherit}
 .speech-bubble .quota-reset{font-size:13px;color:#97829f;margin:0}.speech-bubble .quota-date{font-size:12px;color:#97829f;margin:2px 0 0;font-variant-numeric:tabular-nums}.speech-bubble .quota-updated{font-size:11px;color:#a08aa9;margin:7px 0 0}
 .speech-bubble .low .quota-amount{color:#ac7651}.speech-bubble .low .quota-meter span{background:#cfaa7e}.speech-bubble .low .quota-reset{color:#a78a72}
-.speech-bubble .bubble-dialogue{font-size:16px;line-height:1.6;color:#665075;margin:0;font-weight:450;text-wrap:pretty}.speech-bubble .phrase{display:inline-block;max-width:100%;vertical-align:top}
+.speech-bubble.dialogue-bubble{width:max-content;max-width:164px;padding:8px 9px;border-radius:13px}
+.speech-bubble .bubble-dialogue{font-size:14px;line-height:1.5;color:#665075;margin:0;font-weight:450;text-wrap:pretty}
 .speech-bubble .quota-message{font-size:15px;line-height:1.5;margin:9px 0 0;color:#80638e;overflow-wrap:anywhere}
