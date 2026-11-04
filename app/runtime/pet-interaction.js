@@ -96,7 +96,7 @@ export class PetInteraction {
    this.clickCount=e.timeStamp-this.clickAt<=420?this.clickCount+1:1;this.clickAt=e.timeStamp;
    this.onClick(this.clickCount);this.onChange();
   }else if(this.mode==='peek'&&this.current?.kind==='peek'&&!this.busy&&!this.paused&&!this.hidden){
-   this.current.touch();this.onChange();
+   this.current.touch();this.onClick(1,'peek');this.onChange();
   }
  }
  cancel(){

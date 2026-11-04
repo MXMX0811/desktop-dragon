@@ -8,15 +8,16 @@ import {APP_URL,installProtocol} from './protocol.mjs';
 import {createSessionObserver} from './sessions.mjs';
 import {isCaptureEnabled,setCaptureEnabled} from '../codex-hooks/control.mjs';
 import {readRegistration} from '../codex-hooks/registration.mjs';
+import {createQuotaReader} from './quota.mjs';
 
 const root=fileURLToPath(new URL('../../',import.meta.url));
 app.setName('Desktop Dragon');
 if(!app.isPackaged)app.setPath('userData',join(root,'.local','desktop'));
 protocol.registerSchemesAsPrivileged([{scheme:'dragon',privileges:{standard:true,secure:true,supportFetchAPI:true,stream:true}}]);
 if(!app.requestSingleInstanceLock()){app.quit();}else{
- let win,tray,observer,pointerTimer,saveTimer;
+ let win,tray,observer,quota,pointerTimer,saveTimer;
  let displays,desktop,position,regions=[],pointerDown=false,mode='normal',ignored=true,shown=false,hidden=false;
- let savedFile,settingsFile,hookDirectory,captureEnabled=false,captureBusy=false,captureError=null,registration;
+ let savedFile,settingsFile,hookDirectory,codexExecutable,captureEnabled=false,captureBusy=false,captureError=null,registration;
  const hookConfig=join(process.env.CODEX_HOME||join(homedir(),'.codex'),'hooks.json');
  const layout=()=>({desktop,displays,window:win.getBounds(),position:{x:position.x-desktop.x,y:position.y-desktop.y}});
  const send=(channel,value)=>{if(win&&!win.isDestroyed())win.webContents.send(channel,value);};
@@ -65,10 +66,12 @@ if(!app.requestSingleInstanceLock()){app.quit();}else{
   {label:hidden?'显示龙娘':'隐藏龙娘',click:()=>hidden?show():hide()},
   {label:'回到屏幕内',click:reset},
   {label:'选择 Codex 钩子目录…',click:()=>chooseHookDirectory().catch(console.error)},
+  {label:'选择 Codex 程序…',click:()=>chooseCodexExecutable().catch(console.error)},
   {type:'separator'},
   {label:'退出 Desktop Dragon',click:()=>app.quit()},
  ];}
  async function popup(){
+  action({type:'dismissBubble'});
   registration=await readRegistration(hookConfig);
   publishSessions(observer.snapshot());
   Menu.buildFromTemplate(menuItems()).popup({window:win});
@@ -78,7 +81,15 @@ if(!app.requestSingleInstanceLock()){app.quit();}else{
   if(result.canceled)return;
   hookDirectory=result.filePaths[0];
   captureError=null;await observeHooks();
-  await writeFile(settingsFile,JSON.stringify({hookDirectory})+'\n');
+  await saveSettings();
+ }
+ function saveSettings(){return writeFile(settingsFile,JSON.stringify({hookDirectory,codexExecutable})+'\n');}
+ async function chooseCodexExecutable(){
+  const result=await dialog.showOpenDialog(win,{title:'选择 Codex 可执行程序',properties:['openFile']});
+  if(result.canceled)return;
+  codexExecutable=result.filePaths[0];quota.close();
+  quota=createQuotaReader({executable:codexExecutable});
+  await saveSettings();
  }
  function source(event){return event.sender===win?.webContents&&event.senderFrame?.url===APP_URL;}
  function savePosition(){
@@ -94,6 +105,7 @@ if(!app.requestSingleInstanceLock()){app.quit();}else{
  }
  ipcMain.handle('dragon:bootstrap',event=>{if(!source(event))throw Error('Unexpected renderer');return layout();});
  ipcMain.handle('dragon:sessions',event=>{if(!source(event))throw Error('Unexpected renderer');return withConnection(observer.snapshot());});
+ ipcMain.handle('dragon:quota',event=>{if(!source(event))throw Error('Unexpected renderer');return quota.read();});
  ipcMain.on('dragon:menu',event=>{if(source(event))popup();});
  ipcMain.on('dragon:report',(event,value)=>{
   if(!source(event)||!value||!validRect(value.bounds)||!Array.isArray(value.hitRegions)||value.hitRegions.length>32||!value.hitRegions.every(validRect))return;
@@ -119,6 +131,7 @@ if(!app.requestSingleInstanceLock()){app.quit();}else{
  let settings={};
  try{settings=JSON.parse(await readFile(settingsFile,'utf8'));}catch(error){if(error.code!=='ENOENT')throw error;}
  hookDirectory=settings.hookDirectory||(app.isPackaged?join(app.getPath('userData'),'codex-hooks'):join(root,'.local','codex-hooks'));
+ codexExecutable=settings.codexExecutable||'codex';quota=createQuotaReader({executable:codexExecutable});
  registration=await readRegistration(hookConfig);
  await observeHooks();
  win=new BrowserWindow({
@@ -155,7 +168,7 @@ if(!app.requestSingleInstanceLock()){app.quit();}else{
   send('dragon:layout',layout());
  };
  screen.on('display-added',screenChanged);screen.on('display-removed',screenChanged);screen.on('display-metrics-changed',screenChanged);
- app.on('before-quit',()=>{clearInterval(pointerTimer);clearTimeout(saveTimer);observer.close();tray.destroy();});
+ app.on('before-quit',()=>{clearInterval(pointerTimer);clearTimeout(saveTimer);observer.close();quota.close();tray.destroy();});
  app.on('window-all-closed',()=>app.quit());
  await win.loadURL(APP_URL);
  console.log('Desktop Dragon loaded',APP_URL);

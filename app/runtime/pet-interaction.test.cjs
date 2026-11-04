@@ -24,7 +24,7 @@ async function harness(t,{initial=view(),taskLoad=async()=>{},dragLoad=async()=>
  global.ResizeObserver=class{observe(){}disconnect(){}};
  let frame=0;global.requestAnimationFrame=()=>++frame;global.cancelAnimationFrame=()=>{};
  const {PetPresenter}=await import('./presenter.js'),{PetInteraction}=await import('./pet-interaction.js');
- const stage=element(),taskStage=element(),events=[],errors=[],clicks=[],scenes=[];
+ const stage=element(),taskStage=element(),events=[],errors=[],clicks=[],peekClicks=[],scenes=[];
  const presenter=new PetPresenter(taskStage,element());
  const taskPosition=(_view,el)=>{
   const offset=taskStage.style.transform?.match(/-?[\d.]+/g)?.map(Number)||[0,0];
@@ -60,7 +60,7 @@ async function harness(t,{initial=view(),taskLoad=async()=>{},dragLoad=async()=>
   createDrag:async el=>{await dragLoad();return scene('drag',el);},
   createFlight:async(el,ended)=>{await flightLoad();return scene('flight',el,ended);},createPeek:async el=>{await peekLoad();return scene('peek',el);},
   taskEye:taskPosition,
-  onClick:count=>clicks.push(count),onError:error=>errors.push(error),
+  onClick:(count,kind)=>(kind==='peek'?peekClicks:clicks).push(count),onError:error=>errors.push(error),
  });
  interaction.cloud=effects('interaction');interaction.fade={animations:[],play:async()=>{},destroy(){}};
  interaction.setTarget(initial);
@@ -74,7 +74,7 @@ async function harness(t,{initial=view(),taskLoad=async()=>{},dragLoad=async()=>
   interaction.destroy();presenter.destroy();
   for(const[name,value]of Object.entries(saved))if(value===undefined)delete global[name];else global[name]=value;
  });
- return{interaction,presenter,stage,events,errors,clicks,scenes,down,move,up,event};
+ return{interaction,presenter,stage,events,errors,clicks,peekClicks,scenes,down,move,up,event};
 }
 
 test('install preserves the prepared canvas pixels through scene changes and drag return',async t=>{
@@ -361,6 +361,7 @@ for(const side of ['left','right']){
   // Repeated quick clicks must not enter the normal character's triple-click path.
   for(let i=0;i<3;i++){h.down(x);h.up(x);}
   assert.equal(peek.touches,3);assert.deepEqual(h.clicks,[]);assert.equal(h.interaction.clickCount,0);
+  assert.deepEqual(h.peekClicks,[1,1,1]);
   assert.equal(h.interaction.current,entry);assert.equal(h.interaction.target,target);
   assert.equal(h.presenter.current.animation.visible,false);assert.equal(h.presenter.current.animation.suspended,true);
   assert.deepEqual(h.errors,[]);
@@ -372,6 +373,7 @@ test('a hidden or paused peek stops its animation and accepts clicks again after
  const peek=h.scenes.find(scene=>scene.kind==='peek');
  h.interaction.setPaused(true);h.down(590);h.up(590);
  assert.equal(peek.pauses.at(-1),true);assert.equal(peek.touches,0);
+ assert.deepEqual(h.peekClicks,[]);
  h.interaction.setPaused(false);h.down(590);h.up(590);
  assert.equal(peek.pauses.at(-1),false);assert.equal(peek.touches,1);
  h.down(590);document.hidden=true;h.interaction.onVisibility();h.up(590);
@@ -379,6 +381,7 @@ test('a hidden or paused peek stops its animation and accepts clicks again after
  assert.equal(peek.pauses.at(-1),true);assert.equal(peek.touches,1);
  document.hidden=false;h.interaction.onVisibility();h.down(590);h.up(590);
  assert.equal(peek.pauses.at(-1),false);assert.equal(peek.touches,2);
+ assert.deepEqual(h.peekClicks,[1,1]);
  assert.deepEqual(h.clicks,[]);assert.deepEqual(h.errors,[]);
 });
 

@@ -5,10 +5,11 @@ import {DRAG_EDGE_WIDTH,taskEye,createDrag,createFlight,createPeek} from '../run
 import {areaAt,outsideEdge,union} from './geometry.js';
 import {SubagentCompanions} from '../../assets/shared/subagents/scene.js';
 import {IdleSleep} from './idle-sleep.js';
+import {SpeechBubble} from './bubble.js';
 
 const $=id=>document.getElementById(id),bridge=window.dragon;
 const stage=$('stage'),characters=$('characters');
-let companions;
+let companions,bubble;
 let layout,areas=[],interaction,presenter,view={scene:'standby',form:'chibi',waiting:false,sleeping:false,suspended:false};
 let eye,frame=0,lastReport='',snapshot=null,following=true,disposed=false;
 let form=localStorage.getItem('dragon.taskForm')==='normal'?'normal':'chibi';
@@ -70,20 +71,32 @@ function renderPanel(){
  }
  positionPanel();scheduleReport();
 }
-function openPanel(){if(interaction.active)return;$('panel').hidden=false;renderPanel();}
-function touch(count){
+function openPanel(){if(interaction.active)return;bubble.hide({immediate:true});$('panel').hidden=false;renderPanel();}
+function bubbleContext(){
+ const displayed=presenter.current.view;
+ return {...displayed,mode:interaction.current?.kind||'normal',hasAgents:companions.active};
+}
+function bubblePlacement(){
+ const current=interaction.current?.kind==='peek'?interaction.current:null,entry=current||presenter.current;
+ const point=current?current.eye():interaction.eye();
+ return {eye:point,body:rect(entry.element),area:current?.area||areaAt(point,areas)};
+}
+function touch(count,kind='normal'){
  idleSleep.restart();
- if(count===3&&dualFormScenes.has(view.scene)){changeForm();return;}
- if(count>3)return;
- if(view.sleeping){setView({...view,sleeping:false});return;}
- presenter.touch();companions.triggerOrbit();
+ if(kind==='peek'){bubble.click(bubbleContext());return;}
+ const displayed=presenter.current.view,canChangeForm=dualFormScenes.has(displayed.scene);
+ if(count===3&&canChangeForm){bubble.hide({immediate:true});changeForm();return;}
+ if(displayed.sleeping)setView({...view,sleeping:false});
+ else if(count<=3){presenter.touch();companions.triggerOrbit();}
+ bubble.click(bubbleContext(),{count,canChangeForm});
 }
 function changeForm(){
  if(!dualFormScenes.has(view.scene)||interaction.active||presenter.busy)return;
- closePanel();form=form==='normal'?'chibi':'normal';localStorage.setItem('dragon.taskForm',form);setView({...view,form});
+ bubble.hide({immediate:true});closePanel();form=form==='normal'?'chibi':'normal';localStorage.setItem('dragon.taskForm',form);setView({...view,form});
 }
 function setView(next){
  view={...next,form:dualFormScenes.has(next.scene)?(next.form||form):'chibi'};
+ if(presenter?.current&&!interaction.active&&view.form!==presenter.current.view.form)bubble?.hide({immediate:true});
  interaction.setTarget(view);syncIdleSleep();scheduleReport();
 }
 function followSnapshot(){
@@ -131,6 +144,10 @@ function report(){
   return;
  }
  refreshCompanions();
+ if(bubble){
+  if(interaction.mode==='drag'||interaction.mode==='flight'||interaction.active&&interaction.current?.kind!=='peek')bubble.hide({immediate:true});
+  else{bubble.setContext(bubbleContext());bubble.position();}
+ }
  const visuals=[],hitRegions=[];
  const current=interaction.current;
  if(!interaction.active||!current){
@@ -151,6 +168,7 @@ function report(){
   if(!el.hidden){const r=rect(el);visuals.push(r);if(el===$('panel')||el===$('error'))hitRegions.push(r);}
  }
  if(companions.active){const r=rect(presenter.current.element);visuals.push({x:r.x-55,y:r.y-55,width:r.width+110,height:r.height+110});}
+ if(bubble?.visible)visuals.push(rect(bubble.element));
  if(current?.kind==='flight')hitRegions.length=0;
  if(!interaction.pointer&&!interaction.busy&&!presenter.busy){
   eye=current?current.eye():interaction.eye();
@@ -187,28 +205,30 @@ try{
   workAreaAt:p=>areaAt(p,areas),edgeAt:(p,a)=>outsideEdge(p,a,areas,DRAG_EDGE_WIDTH),
   onChange:()=>{if(interaction.pointer?.dragged){closePanel();eye={...interaction.position};if(view.sleeping)setView({...view,sleeping:false});}syncIdleSleep();scheduleReport();},onError:showError,
  });
+ bubble=new SpeechBubble(stage,{readQuota:()=>bridge.quota(),getPlacement:bubblePlacement,onChange:scheduleReport});
  interaction.position={...eye};interaction.setTarget(view);
  const resize=new ResizeObserver(scheduleReport);resize.observe(characters);resize.observe($('panel'));
  const offLayout=bridge.onLayout(applyLayout);
  const offAction=bridge.onAction(action=>{
-  if(action.type==='form')changeForm();
+  if(action.type==='dismissBubble')bubble.hide({immediate:true});
+  else if(action.type==='form')changeForm();
   else if(action.type==='scene'){closePanel();following=false;setView({scene:action.scene,form,waiting:Boolean(action.waiting),waitingPose:Boolean(action.waiting),sleeping:Boolean(action.sleeping),suspended:false});}
   else if(action.type==='follow'){following=true;followSnapshot();if(!$('panel').hidden)renderPanel();}
   else if(action.type==='panel')openPanel();
-  else if(action.type==='visible'){presenter.setVisible(action.visible);interaction.setPaused(!action.visible);syncIdleSleep();}
+  else if(action.type==='visible'){if(!action.visible)bubble.hide({immediate:true});presenter.setVisible(action.visible);interaction.setPaused(!action.visible);syncIdleSleep();}
   else if(action.type==='reset'){
-   closePanel();eye={...layout.position};interaction.resetPosition(eye);scheduleReport();
+   bubble.hide({immediate:true});closePanel();eye={...layout.position};interaction.resetPosition(eye);scheduleReport();
   }
  });
  const offSessions=bridge.onSessions(value=>{snapshot=value;followSnapshot();if(!$('panel').hidden)renderPanel();});
  snapshot=await bridge.sessions();followSnapshot();
  $('close-panel').onclick=closePanel;
- stage.addEventListener('contextmenu',event=>{event.preventDefault();idleSleep.restart();closePanel();bridge.menu();});
+ stage.addEventListener('contextmenu',event=>{event.preventDefault();idleSleep.restart();bubble.hide({immediate:true});closePanel();bridge.menu();});
  stage.addEventListener('pointerdown',event=>{
   idleSleep.restart();
   if(!event.target.closest('#panel'))closePanel();
  },true);
- document.addEventListener('keydown',event=>{if(event.key==='Escape')closePanel();});
- document.addEventListener('visibilitychange',()=>{presenter.setVisible(!document.hidden);syncIdleSleep();});
- addEventListener('pagehide',()=>{disposed=true;idleSleep.destroy();cancelAnimationFrame(frame);resize.disconnect();offLayout();offAction();offSessions();companions.destroy();interaction.destroy();presenter.destroy();},{once:true});
+ document.addEventListener('keydown',event=>{if(event.key==='Escape'){closePanel();bubble.hide();}});
+ document.addEventListener('visibilitychange',()=>{if(document.hidden)bubble.hide({immediate:true});presenter.setVisible(!document.hidden);syncIdleSleep();});
+ addEventListener('pagehide',()=>{disposed=true;bubble.destroy();idleSleep.destroy();cancelAnimationFrame(frame);resize.disconnect();offLayout();offAction();offSessions();companions.destroy();interaction.destroy();presenter.destroy();},{once:true});
 }catch(error){showError(error);}

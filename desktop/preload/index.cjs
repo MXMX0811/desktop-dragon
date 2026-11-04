@@ -7,6 +7,7 @@ const listen=channel=>callback=>{
 contextBridge.exposeInMainWorld('dragon',{
  bootstrap:()=>ipcRenderer.invoke('dragon:bootstrap'),
  sessions:()=>ipcRenderer.invoke('dragon:sessions'),
+ quota:()=>ipcRenderer.invoke('dragon:quota'),
  report:value=>ipcRenderer.send('dragon:report',value),
  menu:()=>ipcRenderer.send('dragon:menu'),
  onLayout:listen('dragon:layout'),
