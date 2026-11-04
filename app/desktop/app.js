@@ -17,7 +17,7 @@ const idleSleep=new IdleSleep(()=>setView({...view,sleeping:true}));
 
 function syncIdleSleep(){
  idleSleep.setEligible(Boolean(!disposed&&following&&snapshot&&!snapshot.error&&
-  snapshot.activity.activeCount===0&&view.scene==='standby'&&!view.sleeping&&!view.suspended&&
+  snapshot.activity.activeCount===0&&view.scene==='standby'&&!view.waiting&&!view.sleeping&&!view.suspended&&
   !interaction.active&&!interaction.pointer&&!presenter.busy&&!presenter.hidden&&!document.hidden));
 }
 
@@ -59,14 +59,14 @@ function renderPanel(){
  const list=$('sessions');list.replaceChildren();
  if(snapshot?.error){const p=document.createElement('p');p.textContent=`状态读取失败：${snapshot.error}`;list.append(p);}
  const sessions=snapshot?.sessions||[];
- if(snapshot?.activity){const p=document.createElement('p');p.textContent=`已观察活动会话 ${snapshot.activity.activeCount} · 工具 ${snapshot.activity.toolCount} · 子代理 ${snapshot.activity.agentCount}`;list.append(p);}
+ if(snapshot?.activity){const p=document.createElement('p');p.textContent=`已观察活动会话 ${snapshot.activity.activeCount} · 工具 ${snapshot.activity.toolCount} · 子代理 ${snapshot.activity.agentCount} · 待回答 ${snapshot.activity.pendingInputCount}`;list.append(p);}
  if(!sessions.length){const p=document.createElement('p');p.textContent='暂无可显示的会话记录。';list.append(p);}
  const stateNames={activity_observed:'观察到本轮活动',tool_running:'执行工具',agent_running:'子代理活动',permission_requested:'观察到权限请求，结果未知',compacting:'整理上下文',session_ended:'会话已结束',unknown:'当前状态未知',interrupted:'已中断',stop_observed:'观察到停止事件，完成状态未知'};
  for(const session of sessions){
   const item=document.createElement('div');item.className='session';
   const title=document.createElement('strong');title.textContent=`Codex · ${session.session_id.slice(0,12)}`;
   const detail=document.createElement('span');
-  detail.textContent=session.history?'历史记录 · 当前状态未知':`${stateNames[session.state]||session.state} · 工具 ${session.active_tools??0} · 子代理 ${session.active_agents??0}`;
+  detail.textContent=session.history?'历史记录 · 当前状态未知':`${stateNames[session.state]||session.state} · 工具 ${session.active_tools??0} · 子代理 ${session.active_agents??0} · 待回答 ${session.pending_input_count}`;
   item.append(title,detail);list.append(item);
  }
  positionPanel();scheduleReport();
@@ -103,9 +103,9 @@ function followSnapshot(){
  if(!following||!snapshot)return;
  scheduleReport();
  const activity=snapshot.activity;
- const sleeping=view.sleeping&&activity.scene==='standby'&&activity.activeCount===0&&!snapshot.error&&!activity.suspended;
- const next={scene:activity.scene,form:dualFormScenes.has(activity.scene)?form:'chibi',waiting:false,sleeping,suspended:activity.suspended};
- if(next.scene!==view.scene||next.form!==view.form||next.suspended!==view.suspended||next.sleeping!==view.sleeping||view.waiting)setView(next);
+ const sleeping=view.sleeping&&activity.scene==='standby'&&activity.activeCount===0&&!activity.waiting&&!snapshot.error&&!activity.suspended;
+ const next={scene:activity.scene,form:dualFormScenes.has(activity.scene)?form:'chibi',waiting:activity.waiting,sleeping,suspended:activity.suspended};
+ if(next.scene!==view.scene||next.form!==view.form||next.suspended!==view.suspended||next.sleeping!==view.sleeping||next.waiting!==view.waiting)setView(next);
  syncIdleSleep();
 }
 function showError(error){

@@ -35,6 +35,35 @@ function turnView(turn) {
   };
 }
 
+function observeInput(session, event) {
+  if (event.hook_event_name === 'UserPromptSubmit') {
+    for (const reply of event.input_replies ?? []) {
+      const request = session.input_requests.get(reply.tool_use_id);
+      if (request && Number.isInteger(reply.question_index) && reply.question_index >= 0) {
+        request.answered.add(reply.question_index);
+      }
+    }
+    return;
+  }
+  if (!['PreToolUse', 'PostToolUse'].includes(event.hook_event_name)
+    || event.tool_name !== 'request_user_input_async' || !event.tool_use_id || !event.turn_id) return;
+
+  let request = session.input_requests.get(event.tool_use_id);
+  if (!request) {
+    request = {tool_use_id:event.tool_use_id, turn_id:event.turn_id, question_count:0,
+      accepted:false, answered:new Set()};
+    session.input_requests.set(event.tool_use_id, request);
+  }
+  if (Number.isInteger(event.input_question_count) && event.input_question_count > 0) {
+    request.question_count = event.input_question_count;
+  }
+  if (event.hook_event_name === 'PreToolUse') request.started_at ??= event.received_at;
+  else {
+    request.accepted_at ??= event.received_at;
+    if (typeof event.input_request_accepted === 'boolean') request.accepted = event.input_request_accepted;
+  }
+}
+
 /**
  * Rebuild from metadata events. received_at is observer time, not tool duration.
  * Full IDs are essential: a tool without tool_use_id remains an unpaired event.
@@ -52,7 +81,7 @@ export function reduceEvents(events) {
     const name = event.hook_event_name;
     let session = sessions.get(event.session_id);
     if (!session) {
-      session = {session_id:event.session_id, turns:new Map(), current_turn_id:null,
+      session = {session_id:event.session_id, turns:new Map(), input_requests:new Map(), current_turn_id:null,
         closed:false, unpaired_events:0};
       sessions.set(event.session_id, session);
     }
@@ -67,9 +96,13 @@ export function reduceEvents(events) {
     if (name === 'SessionEnd') {
       session.closed = true;
       session.compacting = false;
+      session.input_requests.clear();
       for (const turn of session.turns.values()) closeTurn(turn, 'session_ended');
       continue;
     }
+    // An accepted async question outlives its tool call and the prompting turn.
+    // Only the host's exact question reply resolves it; Stop/Interrupt do not.
+    if (!session.closed) observeInput(session, event);
     if (!event.turn_id) {
       // Some hooks (e.g. compaction) are not turn-scoped. Preserve session facts.
       if (name === 'PreCompact') session.compacting = true;
@@ -170,6 +203,14 @@ export function reduceEvents(events) {
     const activeTurns = turns.filter(turn => turn === current || (turn.agent_id && turn.active_agents > 0));
     const activeAgents = activeTurns.reduce((sum, turn) => sum + turn.active_agents, 0);
     const tools = activeTurns.flatMap(turn => turn.tools.filter(tool => tool.state === 'running'));
+    const pendingInputs = [...session.input_requests.values()]
+      .filter(request => request.accepted && request.question_count > 0)
+      .map(request => ({
+        tool_use_id:request.tool_use_id, turn_id:request.turn_id,
+        pending_count:request.question_count - [...request.answered].filter(index => index < request.question_count).length,
+        requested_at:request.started_at ?? request.accepted_at,
+      }))
+      .filter(request => request.pending_count > 0);
     const state = session.closed ? 'session_ended' : session.compacting || current?.compacting ? 'compacting'
       : current?.state === 'permission_requested' ? 'permission_requested'
       : tools.length ? 'tool_running'
@@ -179,6 +220,8 @@ export function reduceEvents(events) {
       last_event:session.last_event, last_received_at:session.last_received_at,
       current_turn_id:session.current_turn_id,
       state, active_tools:tools.length, active_agents:activeAgents, tools,
+      pending_inputs:pendingInputs,
+      pending_input_count:pendingInputs.reduce((sum, request) => sum + request.pending_count, 0),
       unpaired_events:session.unpaired_events, turns,
     };
   });

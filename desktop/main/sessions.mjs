@@ -26,6 +26,8 @@ function sessionView(session, history) {
     active_tools:active ? session.active_tools : 0,
     active_agents:active ? session.active_agents : 0,
     tools:active ? session.tools : [],
+    pending_inputs:history ? [] : session.pending_inputs,
+    pending_input_count:history ? 0 : session.pending_input_count,
     permission_requests_observed:session.turns.reduce((sum, item) => sum + item.permission_requests.length, 0),
     unpaired_events:session.unpaired_events,
   };
@@ -34,13 +36,22 @@ function sessionView(session, history) {
 export function projectSessions(historyEvents, observedEvents, observedSince, previousScene = 'standby', now = Date.now()) {
   const sessions = new Map(reduceEvents(historyEvents).sessions.map(session =>
     [session.session_id, sessionView(session, true)]));
-  const recentTools = new Map();
+  const recentTools = new Map(), pendingInputs = [];
   for (const session of reduceEvents(observedEvents).sessions) {
     sessions.set(session.session_id, sessionView(session, false));
     const turn = session.turns.find(item => item.turn_id === session.current_turn_id);
     const completed = (turn?.tools ?? []).filter(tool => tool.state === 'output_observed' && tool.started_at)
       .sort((a, b) => String(b.output_observed_at).localeCompare(String(a.output_observed_at)))[0];
     if (completed) recentTools.set(session.session_id, completed);
+    for (const input of session.pending_inputs) {
+      const sourceTurn = session.turns.find(item => item.turn_id === input.turn_id);
+      const precedingTool = sourceTurn?.tools.filter(tool => tool.tool_name !== 'request_user_input_async'
+        && tool.started_at && tool.started_at <= input.requested_at)
+        .sort((a, b) => b.started_at.localeCompare(a.started_at))[0];
+      // A question keeps the task pose from when it was asked. Questions asked
+      // without a preceding tool use the general work confirmation animation.
+      pendingInputs.push({...input, scene:precedingTool ? sceneFor(precedingTool) : 'work'});
+    }
   }
   const list = [...sessions.values()].sort((a, b) => String(b.last_received_at).localeCompare(String(a.last_received_at)));
   const active = list.filter(session => !session.history && ACTIVE.has(session.state));
@@ -58,18 +69,21 @@ export function projectSessions(historyEvents, observedEvents, observedSince, pr
   });
   const newestTool = [...tools].sort((a, b) => String(b.started_at).localeCompare(String(a.started_at)))[0];
   const latestHeld = held.sort((a, b) => b.until - a.until)[0];
-  const scene = active.length
+  const taskScene = active.length
     ? tools.some(tool => sceneFor(tool) === previousScene) ? previousScene
       : newestTool ? sceneFor(newestTool) : latestHeld?.scene ?? 'thinking'
     : 'standby';
+  const pending = pendingInputs.sort((a, b) => b.requested_at.localeCompare(a.requested_at))[0];
   return {
     sessions:list,
-    activity:{scene, activeCount:active.length, toolCount:tools.length,
+    activity:{scene:pending?.scene ?? taskScene, waiting:Boolean(pending),
+      pendingInputCount:pendingInputs.reduce((sum, input) => sum + input.pending_count, 0),
+      activeCount:active.length, toolCount:tools.length,
       agentCount:active.reduce((sum, session) => sum + session.active_agents, 0),
       suspended:false, sceneCounts,
-      holdUntil:!tools.length && latestHeld ? latestHeld.until : null},
+      holdUntil:!pending && !tools.length && latestHeld ? latestHeld.until : null},
     observedSince,
-    capabilities:{usage:false, todos:false, confirmedWaiting:false, successfulCompletion:false, rootTaskCount:false},
+    capabilities:{usage:false, todos:false, confirmedWaiting:true, successfulCompletion:false, rootTaskCount:false},
     error:null,
   };
 }

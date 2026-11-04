@@ -157,8 +157,69 @@ test('permission event does not claim confirmed waiting', () => {
   const view = projectSessions([], [event('UserPromptSubmit'), event('PermissionRequest')], since);
   assert.equal(view.sessions[0].state, 'permission_requested');
   assert.equal(view.activity.scene, 'thinking');
-  assert.equal(view.capabilities.confirmedWaiting, false);
+  assert.equal(view.activity.waiting, false);
+  assert.equal(view.activity.pendingInputCount, 0);
   assert.equal(view.sessions[0].permission_requests_observed, 1);
+});
+
+test('an accepted async question keeps its reading pose after tools and the turn stop', () => {
+  const question = {tool_name:'request_user_input_async', tool_use_id:'question', input_question_count:2};
+  const events = [event('UserPromptSubmit'),
+    event('PreToolUse', {tool_use_id:'read', tool_name:'Bash', tool_kind:'read'}),
+    event('PostToolUse', {tool_use_id:'read'}), event('PreToolUse', question),
+    event('PostToolUse', {...question, input_request_accepted:true}),
+    event('PreToolUse', {tool_use_id:'later-work', tool_name:'Bash', tool_kind:'command'}), event('Stop')];
+  let view = projectSessions([], events, since, 'work');
+  assert.equal(view.activity.waiting, true);
+  assert.equal(view.activity.scene, 'reading');
+  assert.equal(view.activity.pendingInputCount, 2);
+  assert.equal(view.activity.activeCount, 0);
+  assert.equal(view.activity.toolCount, 0);
+  assert.equal(view.activity.holdUntil, null);
+
+  events.push(event('UserPromptSubmit', {turn_id:'answer-turn',
+    input_replies:[{tool_use_id:'question', question_index:0}]}));
+  view = projectSessions([], events, since);
+  assert.equal(view.activity.waiting, true);
+  assert.equal(view.activity.pendingInputCount, 1);
+
+  events.push(event('UserPromptSubmit', {turn_id:'answer-turn',
+    input_replies:[{tool_use_id:'question', question_index:1}]}));
+  view = projectSessions([], events, since);
+  assert.equal(view.activity.waiting, false);
+  assert.equal(view.activity.pendingInputCount, 0);
+  assert.equal(view.activity.scene, 'thinking');
+});
+
+test('pending user input takes display priority across sessions without changing activity counts', () => {
+  const question = {tool_name:'request_user_input_async', tool_use_id:'question', input_question_count:1};
+  const events = [event('UserPromptSubmit'), event('PreToolUse', question),
+    event('PostToolUse', {...question, input_request_accepted:true}), event('Stop'),
+    event('UserPromptSubmit', {session_id:'session-b',turn_id:'turn-b'}),
+    event('PreToolUse', {session_id:'session-b',turn_id:'turn-b',tool_use_id:'read',tool_name:'webrun'})];
+  let view = projectSessions([], events, since, 'reading');
+  assert.equal(view.activity.scene, 'work');
+  assert.equal(view.activity.waiting, true);
+  assert.equal(view.activity.activeCount, 1);
+  assert.equal(view.activity.toolCount, 1);
+  assert.equal(view.activity.sceneCounts.reading, 1);
+  events.push(event('UserPromptSubmit', {turn_id:'answer-turn',
+    input_replies:[{tool_use_id:'question',question_index:0}]}));
+  view = projectSessions([], events, since, 'work');
+  assert.equal(view.activity.scene, 'reading');
+  assert.equal(view.activity.waiting, false);
+});
+
+test('historical or unaccepted questions do not create waiting', () => {
+  const question = {tool_name:'request_user_input_async', tool_use_id:'question', input_question_count:1};
+  const events = [event('UserPromptSubmit'), event('PreToolUse', question),
+    event('PostToolUse', {...question, input_request_accepted:true})];
+  const view = projectSessions(events, [], since);
+  assert.equal(view.activity.waiting, false);
+  assert.equal(view.activity.pendingInputCount, 0);
+  assert.equal(view.sessions[0].pending_input_count, 0);
+  assert.deepEqual(view.sessions[0].pending_inputs, []);
+  assert.equal(projectSessions([], events.slice(0, 2), since).activity.waiting, false);
 });
 
 test('explicit session end removes activity; unfamiliar tools are general work', () => {

@@ -6,6 +6,9 @@ const event = (name, n, extra={}) => ({hook_event_name:name, event_id:`e${n}`,
   received_at:`2026-11-01T00:00:${String(n).padStart(2,'0')}.000Z`,
   session_id:'s1', turn_id:'t1', ...extra});
 const current = output => output.sessions[0].turns.find(t => t.turn_id===output.sessions[0].current_turn_id);
+const questionEvent = (name, n, extra={}) => event(name,n,{
+  tool_name:'request_user_input_async', tool_use_id:'question-a', input_question_count:1, ...extra,
+});
 
 test('parallel calls are paired by call ID, sessions do not end each other', () => {
   const output = reduceEvents([
@@ -268,4 +271,131 @@ test('old-turn interrupts, stops and repeated prompts cannot clear current-turn 
     assert.equal(output.sessions[0].current_turn_id,'t2');
     assert.equal(output.sessions[0].state,'compacting');
   }
+});
+
+test('accepted async input remains pending after its immediate tool response', () => {
+  const events=[event('UserPromptSubmit',1),questionEvent('PreToolUse',2)];
+  assert.equal(reduceEvents(events).sessions[0].pending_input_count,0);
+
+  events.push(questionEvent('PostToolUse',3,{input_request_accepted:true}));
+  const output=reduceEvents(events);
+  assert.deepEqual(output.sessions[0].pending_inputs,[{
+    tool_use_id:'question-a', turn_id:'t1', pending_count:1,
+    requested_at:events[1].received_at,
+  }]);
+  assert.equal(output.sessions[0].pending_input_count,1);
+  assert.equal(output.sessions[0].state,'activity_observed');
+  assert.equal(output.summary.active_tools,0);
+});
+
+test('question count can come from Pre; an observed Post alone can establish accepted input', () => {
+  const output=reduceEvents([
+    questionEvent('PreToolUse',1,{input_question_count:2}),
+    questionEvent('PostToolUse',2,{input_question_count:undefined,input_request_accepted:true}),
+    questionEvent('PostToolUse',3,{tool_use_id:'question-b',input_request_accepted:true}),
+  ]);
+  assert.deepEqual(output.sessions[0].pending_inputs,[
+    {tool_use_id:'question-a',turn_id:'t1',pending_count:2,requested_at:event('',1).received_at},
+    {tool_use_id:'question-b',turn_id:'t1',pending_count:1,requested_at:event('',3).received_at},
+  ]);
+  assert.equal(output.sessions[0].pending_input_count,3);
+});
+
+test('only a verified accepted request with a known positive question count becomes pending', () => {
+  const output=reduceEvents([
+    questionEvent('PreToolUse',1,{input_request_accepted:true}),
+    questionEvent('PostToolUse',2,{tool_use_id:'old',input_question_count:undefined}),
+    questionEvent('PostToolUse',3,{tool_use_id:'rejected',input_request_accepted:false}),
+    questionEvent('PostToolUse',4,{tool_use_id:'unknown-count',input_question_count:undefined,input_request_accepted:true}),
+    questionEvent('PostToolUse',5,{tool_use_id:'empty',input_question_count:0,input_request_accepted:true}),
+    questionEvent('PostToolUse',6,{tool_use_id:'other-tool',tool_name:'Bash',input_request_accepted:true}),
+    event('PermissionRequest',7,{tool_name:'request_user_input_async'}),
+  ]);
+  assert.equal(output.sessions[0].pending_input_count,0);
+  assert.deepEqual(output.sessions[0].pending_inputs,[]);
+});
+
+test('ordinary prompts, other tools, Stop and Interrupt cannot resolve an async question', () => {
+  const events=[
+    event('UserPromptSubmit',1),
+    questionEvent('PreToolUse',2),
+    questionEvent('PostToolUse',3,{input_request_accepted:true}),
+    event('PreToolUse',4,{tool_use_id:'other',tool_name:'Bash'}),
+    event('PostToolUse',5,{tool_use_id:'other',tool_name:'Bash'}),
+    event('Stop',6),
+    event('UserPromptSubmit',7,{turn_id:'t2'}),
+    event('Interrupt',8,{turn_id:'t2'}),
+  ];
+  for (let length=3;length<=events.length;length++) {
+    assert.equal(reduceEvents(events.slice(0,length)).sessions[0].pending_input_count,1);
+  }
+  const output=reduceEvents(events);
+  assert.equal(output.sessions[0].state,'interrupted');
+  assert.equal(output.summary.active_tools,0);
+
+  const answered=reduceEvents([...events,event('UserPromptSubmit',9,{
+    turn_id:'t3',input_replies:[{tool_use_id:'question-a',question_index:0}],
+  })]);
+  assert.equal(answered.sessions[0].pending_input_count,0);
+  assert.deepEqual(answered.sessions[0].pending_inputs,[]);
+  assert.equal(answered.sessions[0].current_turn_id,'t3');
+});
+
+test('question replies resolve exact call and session IDs, and each question separately', () => {
+  const events=[
+    questionEvent('PostToolUse',1,{input_question_count:3,input_request_accepted:true}),
+    questionEvent('PostToolUse',2,{tool_use_id:'question-b',input_request_accepted:true}),
+    questionEvent('PostToolUse',3,{session_id:'s2',input_request_accepted:true}),
+    event('UserPromptSubmit',4,{turn_id:'t2',input_replies:[
+      {tool_use_id:'question-a',question_index:1},
+      {tool_use_id:'question-a',question_index:1},
+      {tool_use_id:'unknown',question_index:0},
+      {tool_use_id:'question-a',question_index:9},
+    ]}),
+  ];
+  let output=reduceEvents(events);
+  assert.equal(output.sessions[0].pending_input_count,3);
+  assert.deepEqual(output.sessions[0].pending_inputs.map(request=>[request.tool_use_id,request.pending_count]),[
+    ['question-a',2],['question-b',1],
+  ]);
+  assert.equal(output.sessions[1].pending_input_count,1);
+
+  events.push(event('UserPromptSubmit',5,{turn_id:'t3',input_replies:[
+    {tool_use_id:'question-a',question_index:0},{tool_use_id:'question-a',question_index:2},
+  ]}));
+  output=reduceEvents(events);
+  assert.deepEqual(output.sessions[0].pending_inputs.map(request=>request.tool_use_id),['question-b']);
+  assert.equal(output.sessions[1].pending_input_count,1);
+});
+
+test('duplicate acceptances and replies do not reopen or double count resolved questions', () => {
+  const accepted=questionEvent('PostToolUse',1,{input_request_accepted:true});
+  const reply=event('UserPromptSubmit',2,{turn_id:'t2',input_replies:[{tool_use_id:'question-a',question_index:0}]});
+  const output=reduceEvents([
+    accepted,accepted,reply,reply,
+    questionEvent('PostToolUse',3,{input_request_accepted:true}),
+    questionEvent('PreToolUse',4),
+    event('UserPromptSubmit',5,{turn_id:'t3',input_replies:reply.input_replies}),
+  ]);
+  assert.equal(output.sessions[0].pending_input_count,0);
+  assert.deepEqual(output.sessions[0].pending_inputs,[]);
+});
+
+test('input replies on non-prompt events do not resolve questions', () => {
+  const output=reduceEvents([
+    questionEvent('PostToolUse',1,{input_request_accepted:true}),
+    event('PostToolUse',2,{tool_use_id:'other',input_replies:[{tool_use_id:'question-a',question_index:0}]}),
+  ]);
+  assert.equal(output.sessions[0].pending_input_count,1);
+});
+
+test('SessionEnd discards pending questions and late outputs cannot reopen them', () => {
+  const events=[
+    questionEvent('PostToolUse',1,{input_request_accepted:true}),
+    event('SessionEnd',2,{turn_id:undefined}),
+    questionEvent('PostToolUse',3,{input_request_accepted:true}),
+    event('UserPromptSubmit',4,{turn_id:'t2'}),
+  ];
+  assert.equal(reduceEvents(events).sessions[0].pending_input_count,0);
+  assert.equal(reduceEvents(events).sessions[0].state,'activity_observed');
 });

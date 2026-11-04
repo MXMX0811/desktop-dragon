@@ -3,6 +3,7 @@ import {fileURLToPath} from 'node:url';
 import {join} from 'node:path';
 import {randomUUID} from 'node:crypto';
 import {toolKind} from './tool-kind.mjs';
+import {inputLifecycle} from './input-lifecycle.mjs';
 
 export const dataDirectory = fileURLToPath(new URL('../../.local/codex-hooks/', import.meta.url));
 export const hookEvents = ['SessionStart','UserPromptSubmit','PreToolUse','PostToolUse',
@@ -24,7 +25,7 @@ export function metadata(input) {
     const value=input[key];
     event[`${key}_type`]=Array.isArray(value)?'array':value===null?'null':typeof value;
   }
-  return event;
+  return Object.assign(event,inputLifecycle(input));
 }
 
 export async function saveEvent(event, directory=dataDirectory) {

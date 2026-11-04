@@ -29,13 +29,16 @@ node desktop/codex-hooks/status.mjs --events
 - `receive.mjs`：从stdin接收一条完整JSON，获得完整对象后立即退出，不依赖宿主关闭stdin。
 - `control.mjs`：以数据目录中的`disabled`文件保存采集开关；接收器启动时及保存前均检查。
 - `store.mjs`：提取必要元数据；每个事件使用独立文件，写完后原子改名，避免并发写入相互覆盖或读到半个JSON。
+- `input-lifecycle.mjs`：提取异步提问的问题数量、明确接受标记及结构化回答的调用标识/问题索引，丢弃题目、选项与答案正文。
 - `state.mjs`：纯归并函数，按会话、轮次、工具和子代理标识投影。单个Post不会结束其他并发工具；旧轮次不会覆盖新的已提交轮次。子代理与主会话共享session_id，但使用独立turn_id；子代理事件不抢占主轮次，活动子代理及其工具按会话汇总。SubagentStop只关闭对应子代理轮次。
 - `registration.mjs`：只读检查Codex配置中本接收器覆盖的事件数量，不查询或修改信任状态。
 - `status.mjs`：本地只读查询；没有发送消息、审批或控制会话接口。
 
-记录完整归属ID、事件、工具名、模型、时间、许可模式及输入/输出的数据类型。提示词、命令正文、工具结果及其对象键、回答、工作目录、对话文件路径不落盘。不将PostToolUse解释成成功，也不将Stop解释成最终成功完成。Stop会结束该轮活动计数；全部会话无活动时人物回待机，面板继续保留结果未判定。
+记录完整归属ID、事件、工具名、模型、时间、许可模式及输入/输出的数据类型。提示词、命令正文、工具结果及其对象键、回答、工作目录、对话文件路径不落盘。不将PostToolUse解释成成功，也不将Stop解释成最终成功完成。Stop会结束该轮活动计数；全部会话无活动且无待答问题时人物回待机，面板继续保留结果未判定。
 
 状态包括`activity_observed`、`tool_running`、`agent_running`、`compacting`、`permission_requested`、`stop_observed`、`interrupted`、`session_ended`和`unknown`。`permission_requested`仅说明观察到审批请求，没有把它当作已确认用户阻塞。计数`permission_requests_observed`是观察累计数，不是待处理请求数量。
+
+异步问题独立于工具运行状态：`PostToolUse`的明确`accepted:true`表示问题已发出，不能当作已回答。会话保留`pending_inputs`与`pending_input_count`，仅以完整独立的`send_user_message_question_reply`回调精确解除对应问题；Stop、Interrupt和普通消息不解除，SessionEnd清空。只有本次观察建立的待答进入桌面，历史问题不恢复。多个会话并行时优先显示待确认，活动工具及子代理计数仍按事实计算。
 
 ## 桌面采集开关
 
