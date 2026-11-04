@@ -27,13 +27,13 @@
 
 ### macOS Apple Silicon
 
-发布版本为 `0.1.0-alpha.1`，提供适用于 Apple Silicon（M 系列芯片）Mac 的 ZIP。应用包声明的最低系统版本为 macOS 13。
+发布版本为 `0.1.0-alpha.2`，提供适用于 Apple Silicon（M 系列芯片）Mac 的 ZIP。应用包声明的最低系统版本为 macOS 13。
 
-1. 从 [Release](https://github.com/MXMX0811/desktop-dragon/releases/tag/v0.1.0-alpha.1) 下载 macOS arm64 ZIP 并解压。
+1. 从 [Release](https://github.com/MXMX0811/desktop-dragon/releases/tag/v0.1.0-alpha.2) 下载 macOS arm64 ZIP 并解压。
 2. 将 `Desktop Dragon.app` 移到“应用程序”，然后打开。
 3. 应用包不含 Developer ID 签名和 Apple 公证。若首次打开被系统阻止，确认下载来源后，按 [Apple 官方说明](https://support.apple.com/en-us/102445)，在“系统设置 → 隐私与安全”中选择“仍要打开”，再确认打开。
 
-打包应用已包含运行环境与素材，使用桌宠无需安装 Node.js 或 Python。macOS 下不显示 Dock 图标；可通过人物右键或菜单栏托盘操作、隐藏和退出。首次运行可用右键菜单审阅动作，详见[本版发布说明](docs/releases/0.1.0-alpha.1.md)。
+打包应用已包含运行环境与素材，使用桌宠无需安装 Node.js 或 Python。macOS 下不显示 Dock 图标；可通过人物右键或菜单栏托盘操作、隐藏和退出。首次运行可用右键菜单审阅动作，详见[本版发布说明](docs/releases/0.1.0-alpha.2.md)。
 
 显示真实 Codex 活动需另行安装 Node.js 22.13 或更新版本，取得并保留本仓库，在仓库根目录运行 `npm ci`，再按[钩子接入说明](desktop/codex-hooks/README.md)完成注册、信任与数据目录选择。接收器依赖仓库脚本；移动仓库或修改命令后需重新审阅信任。应用不会自动安装钩子。
 
@@ -60,7 +60,7 @@ npm start
 
 ### 额度查询
 
-安装支持 `account/rateLimits/read` 的 [Codex CLI](https://learn.chatgpt.com/docs/codex/cli)，并在 Codex 中登录 ChatGPT 账户。桌宠默认调用系统命令路径中的 `codex`；找不到时，从右键菜单“选择 Codex 程序…”选择 `codex` 可执行文件（Windows为 `codex.exe`）。
+安装支持 `account/rateLimits/read` 的 [Codex CLI](https://learn.chatgpt.com/docs/codex/cli)，并在 Codex 中登录 ChatGPT 账户。桌宠默认调用系统命令路径中的 `codex`；找不到时，从右键菜单“选择 Codex 程序…”选择 `codex` 可执行文件。
 
 气泡显示所选 Codex 程序当前登录账户的额度，按服务返回的窗口分别展示剩余百分比、距重置时长和本地重置日期。额度属于账户，不按会话累加。首次查询期间显示“正在查询…”，结果到达后开始计时；气泡关闭后再次点击可重新查询，30秒内复用最近结果，到达重置时间后重新获取。
 
@@ -90,7 +90,7 @@ npm test
 npm run package
 ```
 
-GitHub Actions 在每次推送和拉取请求运行同一组 Node 测试。打包使用锁定版本的 Electron Packager，在 `out/` 生成当前主机平台的应用。
+GitHub Actions 在每次推送和拉取请求运行同一组 Node 测试。打包使用锁定版本的 Electron Packager，在 `out/` 生成 macOS 应用。
 
 发布时同步`package.json`与锁文件版本，准备`docs/releases/{版本号}.md`，提交后推送对应的`v{版本号}`标签。发布工作流在macOS arm64完成测试、打包与上传，再公开Release；带`alpha`、`beta`等后缀的版本标记为预发布。
 

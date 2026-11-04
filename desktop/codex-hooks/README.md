@@ -60,7 +60,7 @@ node desktop/codex-hooks/status.mjs --events
 "<node-executable>" "<repository>/desktop/codex-hooks/receive.mjs" --data-dir "<hook-data-directory>"
 ```
 
-占位符需替换为实际路径。数据目录是保存`events/`和`disabled`的父目录；省略`--data-dir`时使用本仓库`.local/codex-hooks/`。Windows路径使用对应系统格式。
+占位符需替换为实际路径。数据目录是保存`events/`和`disabled`的父目录；省略`--data-dir`时使用本仓库`.local/codex-hooks/`。
 
 注册以下12类事件，类型为`command`，超时3秒：
 

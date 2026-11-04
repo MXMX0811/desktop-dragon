@@ -101,11 +101,11 @@
     "failed": 0,
     "hook_tests": 15
   },
-  "pending": [
-    "Current long-running task chat has not loaded new hooks",
+  "excluded_from_verification": [
+    "New hook events from the long-running chat during this observation window",
     "Controlled simultaneous sessions and parent/subagent ID correlation",
     "Permission request and resolution lifecycle",
     "Controlled compaction and interruption",
-    "Windows runtime and long-term resource measurements"
+    "Long-term resource measurements and event retention"
   ]
 }

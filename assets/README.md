@@ -11,7 +11,7 @@ animations/<state>/<form>/
 shared/          # 共用控制器、效果、校色与共用 textures
 vendor/          # 运行依赖及许可证
 references/      # 已选定的人物参考图
-icons/           # 已采纳的应用图标：PNG原图、macOS ICNS与Windows ICO
+icons/           # 已采纳的应用图标：PNG原图、ICNS与ICO容器
 ```
 
 `state` 使用 `standby`、`reading`、`work`、`drawing`、`thinking`；`form` 使用 `chibi` 或 `normal`。不存在的状态与形态不创建空目录。待确认与点击反馈属于原场景，待机、休眠、唤醒共用待机模型。

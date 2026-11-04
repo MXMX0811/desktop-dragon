@@ -427,7 +427,7 @@
       "path": "assets/shared/reference-palette.mjs",
       "group": "current",
       "scope": "2026-11-02仅追加flight-chibi矩阵；原有八种矩阵保持原值，drag/peek未交付。",
-      "notes": "沿用当前颜色矩阵；11/02飞行交付新增flight-chibi，后续真实桌面实施交付新增drag-chibi/peek-chibi，各次均保留原有矩阵。"
+      "notes": "沿用当前颜色矩阵；11/02飞行交付新增flight-chibi，真实桌面实施交付新增drag-chibi/peek-chibi，各次均保留原有矩阵。"
     },
     {
       "source": "dragon-reading-search-a-v3.png",
@@ -850,7 +850,7 @@
       "source": "flight-animation/scene.mjs",
       "path": "assets/animations/flight/chibi/scene.js",
       "group": "current",
-      "notes": "2026-11-02采纳60帧版本；校色与视频使用仓库相对地址，按后续要求仅飞行playbackRate=1.5。"
+      "notes": "2026-11-02采纳60帧版本；校色与视频使用仓库相对地址，按用户要求仅飞行playbackRate=1.5。"
     },
     {
       "source": "flight-animation/qa/timing-60fps/flight-60fps.webm",

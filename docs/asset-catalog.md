@@ -5,7 +5,7 @@
 | 资产 | 当前交付 | 确认与限制 |
 | --- | --- | --- |
 | 彩色应用图标与README teaser | `assets/icons/app.png`、`app.icns`、`app.ico` | 11/03用户提供并明确采纳Q版扒边头像；PNG保留1254×1254原图，ICNS/ICO仅作尺寸与容器转换。README左对齐展示。菜单栏黑白候选未随本次采纳 |
-| Q版待机、休眠、掩嘴哈欠唤醒 | `assets/animations/standby/chibi/scene.js` | 10/29唤醒采用，10/31整体确认；唤醒1.5倍、点击振翅、醒后振翅，沿用后续呼吸调幅 |
+| Q版待机、休眠、掩嘴哈欠唤醒 | `assets/animations/standby/chibi/scene.js` | 10/29唤醒采用，10/31整体确认；唤醒1.5倍、点击振翅、醒后振翅，沿用当前呼吸调幅 |
 | 正比阅读与待确认 | `assets/animations/reading/normal/scene.js` | 双手握书，自动连翻；等待往返最初3倍速，10/31确认 |
 | 正比工作与待确认 | `assets/animations/work/normal/scene.js` | 自然敲键手、摘戴眼镜/托腮、1.5倍往返，10/31确认 |
 | Q版阅读与待确认 | `assets/animations/reading/chibi/scene.js` | 10/31整体确认 |
@@ -15,9 +15,9 @@
 | Q版思考 | `assets/animations/thinking/chibi/scene.js` | 站立全身，10/31整体确认 |
 | Q版拖拎与惯性摆动 | `assets/animations/drag/chibi/scene.js` | 11/02按用户“好的，请进行真实桌面实现”沿用当前制作预览交付；2.5头身、闭眼开口笑、较慢回正；不追记为此前单独采纳 |
 | Q版扒边探头 | `assets/animations/peek/chibi/scene.js` | 11/04按用户指令交付点击回弹与振翅，使用独立身体、翅膀与眼部层；常驻呼吸眨眼、左侧镜像，抓边接触线保持原位置 |
-| Q版飞行 · 60fps | `assets/animations/flight/chibi/scene.js`、`textures/flight.webm` | 11/02用户明确“采纳60帧版本”；5640源片、1112×834、290帧、源时长约4.834秒透明VP9；按后续要求1.5倍速播放约3.22秒。已接原生桌面左右边缘松手触发，macOS右侧飞行、扒边及拖回已实测 |
+| Q版飞行 · 60fps | `assets/animations/flight/chibi/scene.js`、`textures/flight.webm` | 11/02用户明确“采纳60帧版本”；5640源片、1112×834、290帧、源时长约4.834秒透明VP9；按用户要求1.5倍速播放约3.22秒。已接原生桌面左右边缘松手触发，macOS右侧飞行、扒边及拖回已实测 |
 | 共用控制器、校色、问号、终端、图稿与角色部件 | `assets/shared/` | 保留已有动画的共用实现；沿用用户要求的校色修订，校色后单独采纳未记录 |
-| 子代理小云、同步环绕与点击反馈 | `assets/shared/subagents/scene.js`、`style.css`和`textures/` | 11/02确认，Q版半径0.85；11/03按用户要求在人物整体缩小至90%时将云朵实际放大约10%，同步环绕一圈由6秒改为4秒，常驻周期18秒。已接桌面只读观察器的子代理活动计数，任务场景出现双云。11/03已实测单个子代理的独立轮次、启动/结束计数及原生双云显隐；复杂嵌套归属仍待验证，不以造型推断模型品牌或任务数量 |
+| 子代理小云、同步环绕与点击反馈 | `assets/shared/subagents/scene.js`、`style.css`和`textures/` | 11/02确认，Q版半径0.85；11/03按用户要求在人物整体缩小至90%时将云朵实际放大约10%，同步环绕一圈由6秒改为4秒，常驻周期18秒。已接桌面只读观察器的子代理活动计数，任务场景出现双云。11/03已实测单个子代理的独立轮次、启动/结束计数及原生双云显隐；该实机证据覆盖单个子代理，不包含复杂嵌套归属；不以造型推断模型品牌或任务数量 |
 | 圆云变身与渐变调度 | `assets/shared/transformation-cloud.js`、`app/runtime/scene-fade.js` | 使用当前软件表现与切换实现 |
 | 正比原始图、三视图、Q版A母图与选定静态状态 | `assets/references/` | 使用语义文件名；用于形象校验与来源参考，不代表全部都有生产动画 |
 
@@ -27,7 +27,7 @@
 
 实际交付文件见根目录 `asset-delivery.json`。目标路径使用语义名称，来源字段保留制作区相对路径与真实文件名，外部根目录使用脱敏占位符。历史重绘、Remotion/Runway尝试、旧QA、依赖安装目录和会话数据不交付。
 
-飞行于2026-11-02单独采纳60fps版本。视频来源为 `flight-animation/qa/timing-60fps/flight-60fps.webm`，模块来源为 `flight-animation/scene.mjs`；仓库只改写校色导入和视频相对地址。共享色板仅新增 `flight-chibi`，保留原有八种矩阵。独立审阅入口现位于制作区`software-preview/review/flight.html`，不属于软件交付。模块按传入的松手眼部位置对齐首帧，播放中保持原视频路径；向左复用同一视频水平翻转。该次60fps单独采纳不包括拖拎和扒边；它们于同日后续真实桌面实施指令中按当前制作版交付。原生桌面验证由软件实施记录单独说明。
+飞行于2026-11-02单独采纳60fps版本。视频来源为 `flight-animation/qa/timing-60fps/flight-60fps.webm`，模块来源为 `flight-animation/scene.mjs`；仓库只改写校色导入和视频相对地址。共享色板仅新增 `flight-chibi`，保留原有八种矩阵。独立审阅入口现位于制作区`software-preview/review/flight.html`，不属于软件交付。模块按传入的松手眼部位置对齐首帧，播放中保持原视频路径；向左复用同一视频水平翻转。该次60fps单独采纳不包括拖拎和扒边；它们于同日真实桌面实施指令中按当前制作版交付。原生桌面验证由软件实施记录单独说明。
 
 已知限制：5640源片的部分龙角曾越过画面上缘，补帧没有补回缺失轮廓；视频头发、睫毛和饰品细节比静态稿柔和，60fps增加中间位置而不增加空间细节。素材时间约1.65秒翼尖有半透明双轮廓，2.4833秒及2.7833秒翼缘仍有轻微残影（这些是视频时间，1.5倍速下实际经过时间相应缩短）。末两帧全透明，表示人物已完整离屏。此前 `flight-review` 的源片和审阅材料仍保留在制作档案，不是本次运行依赖。
 
@@ -39,7 +39,7 @@
 
 拖拎完整母图来自 `desktop-states-2026-11-02/drag-chibi-v8-2p5-closed.png`，网格和惯性控制器来自 `drag-animation/`；扒边来自 `desktop-states-2026-11-02/peek-right-chibi-v3-colors.png` 与 `edge-animation/scene.mjs`。仓库使用语义目标名 `textures/character.png`，不改动像素与运动参数。
 
-`app/runtime/interaction-scenes.js` 将三种交互资产接给现有软件手势调度，统一导出 `DRAG_WIDTH`、`taskEye`、`createDrag`、`createFlight` 和 `createPeek`。拖拎保留各局部角速度，飞行复用已采纳60fps/1.5倍模块，扒边使用整体镜像和边缘裁切。新增 `drag-chibi` 与 `peek-chibi` 校色矩阵，其余已交付矩阵保持原值。
+`app/runtime/interaction-scenes.js` 将三种交互资产接给现有软件手势调度，统一导出 `DRAG_EDGE_WIDTH`、`taskEye`、`createDrag`、`createFlight` 和 `createPeek`。拖拎保留各局部角速度，飞行复用已采纳60fps/1.5倍模块，扒边使用整体镜像和边缘裁切。新增 `drag-chibi` 与 `peek-chibi` 校色矩阵，其余已交付矩阵保持原值。
 
 ## 2026-11-04扒边点击反馈交付
 
@@ -56,6 +56,6 @@
 
 制作源为`chibi-scenes/{reading,work,drawing}-scene.js`、`drawing-animation/scene.js`及`reading-animation/reading-wait-rig.js`；正比阅读经既有构建导出`runtime/generated/reading.js`。交付到各自`assets/animations/{state}/{form}/scene.js`，仅保留仓库已有资源导入地址。尺寸依据实际非透明轮廓标定，不将140像素纹理中的透明留白当可见大小。
 
-本轮六组状态深浅底检查与24项验证通过，进入、保持、返回各采样16帧，共288个样本。可见高度为29.45px；Q版阅读/工作随呼吸最高29.66px。未发现遮脸、越界或退出残留。检查材料位于制作区`software-preview/qa-question-size/`，不提交到软件仓库。macOS应用已重新打包；Windows未实机检查。
+本轮六组状态深浅底检查与24项验证通过，进入、保持、返回各采样16帧，共288个样本。可见高度为29.45px；Q版阅读/工作随呼吸最高29.66px。未发现遮脸、越界或退出残留。检查材料位于制作区`software-preview/qa-question-size/`，不提交到软件仓库。macOS应用已重新打包。
 
 macOS原生动作菜单已核对Q版工作待确认稳定后的新尺寸，随后恢复“跟随会话状态”；没有留下手动待确认姿态。
