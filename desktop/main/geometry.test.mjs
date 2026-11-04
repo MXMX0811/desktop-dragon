@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {union,contains,initialPosition,clipBounds} from './geometry.mjs';
+import {union,contains,initialPosition,clipBounds,sameDisplayLayout} from './geometry.mjs';
 import {resourcePath} from './protocol.mjs';
 test('virtual desktop includes negative coordinates but hit tests respect real displays',()=>{
  const screens=[{workArea:{x:-1440,y:0,width:1440,height:900}},{workArea:{x:0,y:30,width:1920,height:1050}}];
@@ -11,6 +11,17 @@ test('virtual desktop includes negative coordinates but hit tests respect real d
 });
 test('window crop rounds outward and stays within desktop',()=>{
  assert.deepEqual(clipBounds({x:-20.1,y:50.2,width:250.5,height:200.7},{x:0,y:0,width:1920,height:1080}),{x:0,y:50,width:231,height:201});
+});
+test('display notifications only change layout when desktop work areas change',()=>{
+ const before=[{id:1,workArea:{x:0,y:33,width:1470,height:923},scaleFactor:2},
+  {id:2,workArea:{x:-1920,y:0,width:1920,height:1080},scaleFactor:1}];
+ const after=structuredClone(before).reverse();
+ after[1].scaleFactor=1;
+ assert.equal(sameDisplayLayout(before,after),true);
+ after[1].workArea.y=0;
+ assert.equal(sameDisplayLayout(before,after),false);
+ assert.equal(sameDisplayLayout(before,before.slice(0,1)),false);
+ assert.equal(sameDisplayLayout(before,[{...before[0],id:3},before[1]]),false);
 });
 test('asset protocol exposes only application and asset resources',()=>{
  assert.equal(resourcePath('dragon://app/assets/shared/reference-palette.mjs','/repo'),'/repo/assets/shared/reference-palette.mjs');

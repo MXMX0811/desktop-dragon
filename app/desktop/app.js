@@ -162,9 +162,14 @@ function report(){
 }
 function scheduleReport(){if(!frame&&!disposed)frame=requestAnimationFrame(report);}
 function applyLayout(next){
+ const offset=layout?{x:layout.desktop.x-next.desktop.x,y:layout.desktop.y-next.desktop.y}:{x:0,y:0};
  layout=next;
  areas=next.displays.map(d=>({x:d.workArea.x-next.desktop.x,y:d.workArea.y-next.desktop.y,width:d.workArea.width,height:d.workArea.height}));
  Object.assign(stage.style,{left:'0px',top:'0px',width:`${next.desktop.width}px`,height:`${next.desktop.height}px`});
+ if(interaction){
+  eye={x:eye.x+offset.x,y:eye.y+offset.y};
+  interaction.updateLayout(offset);positionPanel();
+ }
  scheduleReport();
 }
 

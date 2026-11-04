@@ -480,3 +480,110 @@ test('native work area clamps release and preserves the selected edge through fl
  assert.equal(h.interaction.mode,'peek');assert.equal(h.interaction.current.eye().x,580);
  assert.deepEqual(h.interaction.current.area,{x:180,y:60,width:400,height:340});
 });
+
+test('a desktop origin change preserves the current task and its screen position',async t=>{
+ const h=await harness(t,{initial:view('reading','normal',{waiting:true,waitingPose:true})});
+ const retained=h.presenter.current;
+ h.interaction.position=h.interaction.eye();
+ h.interaction.workAreaAt=()=>({x:0,y:0,width:800,height:600});
+ h.interaction.updateLayout({x:120,y:30});await flush();
+ assert.equal(h.interaction.mode,'normal');assert.equal(h.interaction.current,null);
+ assert.equal(h.presenter.current,retained);assert.equal(retained.animation.waiting,true);
+ assert.deepEqual(h.interaction.eye(),{x:320,y:230});
+ assert.deepEqual(h.events.filter(event=>/^(load|destroy)-task:/.test(event)),[]);
+ assert.deepEqual(h.errors,[]);
+});
+
+test('a resized desktop keeps the pet at the edge until the user drags it back to the latest task',async t=>{
+ const h=await harness(t,{flightPlay:ended=>ended()});
+ let area={x:0,y:0,width:600,height:460};h.interaction.workAreaAt=()=>area;
+ h.down();h.move(590);await flush();h.up(590);await flush();
+ const peek=h.interaction.current,retained=h.presenter.current;
+ area={x:0,y:0,width:800,height:500};
+ h.interaction.setTarget(view('thinking'));h.interaction.updateLayout({x:0,y:0});await flush();
+ h.interaction.setTarget(view('standby'));h.interaction.updateLayout({x:0,y:0});await flush();
+ const latest=view('reading','normal',{waiting:true,waitingPose:true});h.interaction.setTarget(latest);await flush();
+ assert.equal(h.interaction.current,peek);assert.equal(h.interaction.mode,'peek');
+ assert.deepEqual(peek.eye(),{x:800,y:200});assert.deepEqual(peek.area,area);
+ assert.equal(h.presenter.current,retained);assert.equal(retained.animation.visible,false);
+ assert.equal(h.events.filter(event=>event==='play-flight').length,1);
+ h.down(800);h.move(350);await flush();h.up(350);await flush();
+ assert.equal(h.interaction.active,false);assert.equal(h.presenter.current.view,latest);
+ assert.equal(h.presenter.current.animation.visible,true);assert.equal(h.presenter.current.animation.waiting,true);
+ assert.deepEqual(h.errors,[]);
+});
+
+test('a desktop origin change preserves the running flight and lands on the updated edge',async t=>{
+ const h=await harness(t);let area={x:0,y:0,width:600,height:460};
+ h.interaction.workAreaAt=()=>area;
+ h.down();h.move(590);await flush();h.up(590);await flush();
+ const flight=h.interaction.current;
+ assert.equal(flight.kind,'flight');
+ area={x:0,y:0,width:640,height:480};
+ h.interaction.updateLayout({x:40,y:20});await flush();
+ assert.equal(h.interaction.current,flight);assert.equal(h.interaction.mode,'flight');
+ assert.deepEqual(flight.eye(),{x:630,y:220});
+ assert.equal(h.events.filter(event=>event==='play-flight').length,1);
+ flight.ended();await flush();
+ assert.equal(h.interaction.mode,'peek');assert.equal(h.interaction.current.side,'right');
+ assert.deepEqual(h.interaction.current.eye(),{x:640,y:220});
+ assert.deepEqual(h.interaction.current.area,area);
+ assert.equal(h.events.filter(event=>event==='play-flight').length,1);assert.deepEqual(h.errors,[]);
+});
+
+test('a desktop origin change during a drag keeps the pointer and pet together without a jump',async t=>{
+ const h=await harness(t);let origin={x:0,y:0};
+ h.interaction.pointFromEvent=e=>({x:e.clientX+origin.x,y:e.clientY+origin.y});
+ h.interaction.workAreaAt=()=>({x:0,y:0,width:800,height:600});
+ h.down();h.move(260,220);await flush();const drag=h.interaction.current;
+ origin={x:50,y:-20};h.interaction.updateLayout(origin);await flush();
+ assert.equal(h.interaction.current,drag);assert.equal(h.interaction.mode,'drag');
+ assert.equal(h.stage.hasPointerCapture(1),true);assert.deepEqual(drag.eye(),{x:310,y:200});
+ h.move(260,220);assert.deepEqual(drag.eye(),{x:310,y:200});
+ h.move(280,230);assert.deepEqual(drag.eye(),{x:330,y:210});
+ h.up(280,230);await flush();
+ assert.equal(h.interaction.active,false);assert.equal(h.stage.hasPointerCapture(1),false);
+ assert.deepEqual(h.interaction.eye(),{x:330,y:210});assert.deepEqual(h.errors,[]);
+});
+
+test('a flight loading across a layout change starts once from the adjusted release position',async t=>{
+ const load=deferred(),h=await harness(t,{flightLoad:()=>load.promise});
+ let area={x:0,y:0,width:600,height:460};h.interaction.workAreaAt=()=>area;
+ h.down();h.move(590);await flush();h.up(590);await flush();
+ assert.equal(h.interaction.mode,'flight');assert.equal(h.interaction.busy,true);
+ area={x:0,y:0,width:640,height:480};h.interaction.updateLayout({x:40,y:20});
+ load.resolve();await flush();
+ assert.equal(h.interaction.current.kind,'flight');
+ assert.deepEqual(h.interaction.current.eye(),{x:630,y:220});
+ h.interaction.current.ended();await flush();
+ assert.equal(h.interaction.mode,'peek');assert.deepEqual(h.interaction.current.eye(),{x:640,y:220});
+ assert.equal(h.events.filter(event=>event==='play-flight').length,1);assert.deepEqual(h.errors,[]);
+});
+
+test('a peek loading across a layout change uses the latest edge without restoring the task',async t=>{
+ const load=deferred(),h=await harness(t,{flightPlay:ended=>ended(),peekLoad:()=>load.promise});
+ let area={x:0,y:0,width:600,height:460};h.interaction.workAreaAt=()=>area;
+ h.down();h.move(590);await flush();h.up(590);await flush();
+ assert.equal(h.interaction.mode,'peek');assert.equal(h.interaction.busy,true);
+ area={x:0,y:0,width:740,height:480};h.interaction.updateLayout({x:40,y:20});
+ h.interaction.setTarget(view('thinking'));load.resolve();await flush();
+ assert.equal(h.interaction.current.kind,'peek');assert.equal(h.interaction.mode,'peek');
+ assert.deepEqual(h.interaction.current.eye(),{x:740,y:220});
+ assert.deepEqual(h.interaction.current.area,area);assert.equal(h.presenter.current.animation.visible,false);
+ assert.equal(h.events.filter(event=>event==='play-flight').length,1);assert.deepEqual(h.errors,[]);
+});
+
+test('a desktop origin change keeps both poses aligned during the return fade',async t=>{
+ const h=await harness(t);h.interaction.workAreaAt=()=>({x:0,y:0,width:900,height:600});
+ h.down();h.move(320);await flush();const drag=h.interaction.current,fade=deferred();
+ h.interaction.fade.play=()=>fade.promise;
+ h.up(320);await flush();
+ assert.equal(h.interaction.current,null);assert.equal(h.interaction.outgoing,drag);
+ assert.equal(h.interaction.busy,true);assert.equal(h.interaction.mode,'normal');
+ h.interaction.updateLayout({x:80,y:40});
+ assert.deepEqual(h.interaction.eye(),{x:400,y:240});assert.deepEqual(drag.eye(),{x:400,y:240});
+ assert.equal(h.presenter.current.animation.visible,true);
+ fade.resolve();await flush();
+ assert.equal(h.interaction.active,false);assert.deepEqual(h.interaction.eye(),{x:400,y:240});
+ assert.equal(h.scenes.find(scene=>scene.kind==='drag').destroyed,1);assert.deepEqual(h.errors,[]);
+});

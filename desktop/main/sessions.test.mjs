@@ -262,6 +262,37 @@ test('observer expires a short pose without new events or repeated idle publicat
   }
 });
 
+test('a delayed pose timer reads a recorded Stop before publishing after wake', async t => {
+  const start = Date.parse('2030-01-01T00:00:00.000Z');
+  t.mock.timers.enable({apis:['setTimeout', 'setInterval', 'Date'], now:start});
+  const directory = await mkdtemp(join(tmpdir(), 'dragon-wake-stop-'));
+  const updates = new EventEmitter(), scenes = [];
+  let observer;
+  try {
+    observer = await createSessionObserver(snapshot => {
+      scenes.push(snapshot.activity.scene); updates.emit('snapshot', snapshot);
+    }, {directory});
+    const pair = {tool_use_id:'short', tool_name:'Bash', tool_kind:'search'};
+    await saveEvent(event('PreToolUse', {...pair, received_at:new Date(start + 100).toISOString()}), directory);
+    await saveEvent(event('PostToolUse', {...pair, received_at:new Date(start + 200).toISOString()}), directory);
+    const reading = once(updates, 'snapshot');
+    t.mock.timers.tick(1000);
+    assert.equal((await reading)[0].activity.scene, 'reading');
+
+    // The receiver writes Stop while the desktop's timers have not run. On
+    // resume the overdue poll and pose timer compete before filesystem I/O ends.
+    await saveEvent(event('Stop', {received_at:new Date(start + 2000).toISOString()}), directory);
+    const resumed = once(updates, 'snapshot');
+    t.mock.timers.setTime(start + 10000);
+    t.mock.timers.tick(0);
+    assert.equal((await resumed)[0].activity.scene, 'standby');
+    assert.deepEqual(scenes, ['standby', 'reading', 'standby']);
+  } finally {
+    observer?.close(); t.mock.timers.reset();
+    await rm(directory, {recursive:true, force:true});
+  }
+});
+
 test('observer publishes new atomic files and closes without writing session state', async () => {
   const directory = await mkdtemp(join(tmpdir(), 'dragon-session-test-'));
   const events = new EventEmitter();

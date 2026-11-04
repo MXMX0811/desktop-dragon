@@ -5,6 +5,12 @@ export function union(rects) {
 export function contains(rect,point) {
  return point.x>=rect.x&&point.y>=rect.y&&point.x<rect.x+rect.width&&point.y<rect.y+rect.height;
 }
+export function sameDisplayLayout(before,after) {
+ return before.length===after.length&&before.every(display=>{
+  const next=after.find(item=>item.id===display.id);
+  return next&&['x','y','width','height'].every(key=>display.workArea[key]===next.workArea[key]);
+ });
+}
 export function validRect(r) {
  return r&&['x','y','width','height'].every(k=>Number.isFinite(r[k]))&&r.width>0&&r.height>0;
 }

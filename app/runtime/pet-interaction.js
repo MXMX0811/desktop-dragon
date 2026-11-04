@@ -108,6 +108,24 @@ export class PetInteraction {
   this.releaseCapture();this.current?.pause?.();this.current?.release?.();
   this.clickCount=0;this.clickAt=0;this.position={...point};this.desired={kind:'normal'};this.onChange();this.pump();
  }
+ updateLayout(offset){
+  const shift=point=>({x:point.x+offset.x,y:point.y+offset.y});
+  this.position=shift(this.position);
+  // Task canvases share one parent, including an incoming return transition.
+  this.moveTask(shift(this.eye()));
+  if(this.pointer)for(const key of ['start','last','eye'])this.pointer[key]=shift(this.pointer[key]);
+  // A display update changes coordinates, not the user's chosen interaction.
+  // Include the desired object: an asset may still be loading asynchronously.
+  for(const entry of new Set([this.desired,this.current,this.pending,this.outgoing])){
+   if(!entry)continue;
+   if(entry.anchor)entry.anchor=shift(entry.anchor);
+   if(entry.area)entry.area=this.workArea(this.position);
+   if(entry.element&&entry.kind!=='normal')this.layout(entry);
+  }
+  if(!this.active){this.position=this.fitTaskEye(this.position,this.presenter.current);this.moveTask(this.position);}
+  if(!this.cloudElement.hidden&&this.transitionPair)this.cloud.fit(this.transitionPair);
+  this.onChange();
+ }
  async prepare(wanted){
   if(wanted.kind==='normal'){
    let entry;
@@ -130,7 +148,7 @@ export class PetInteraction {
    if(wanted.kind==='drag')scene=await this.createDrag(element);
    if(wanted.kind==='flight')scene=await this.createFlight(element,()=>{
     if(this.current?.element!==element||this.destroyed)return;
-    this.desired={kind:'peek',side:wanted.side,area:wanted.area};this.onChange();this.pump();
+    this.desired={kind:'peek',side:wanted.side,area:this.current.area};this.onChange();this.pump();
    });
    if(wanted.kind==='peek')scene=await this.createPeek(element);
    const entry={...scene,element,kind:wanted.kind,side:wanted.side,anchor:wanted.anchor,area:wanted.area,form:'chibi'};

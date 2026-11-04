@@ -80,7 +80,7 @@ export async function createSessionObserver(onSnapshot, {directory = dataDirecto
   const folder = join(directory, 'events');
   await mkdir(folder, {recursive:true, mode:0o700});
   const seen = new Set(), observed = [];
-  let history = [], current, closed = false, scanning = false, holdTimer;
+  let history = [], current, closed = false, scanning = null, holdTimer;
   const publish = error => {
     if (closed) return;
     clearTimeout(holdTimer);
@@ -96,21 +96,28 @@ export async function createSessionObserver(onSnapshot, {directory = dataDirecto
     }
     onSnapshot(current);
     if (current.activity.holdUntil) {
-      holdTimer = setTimeout(() => publish(error), Math.max(0, current.activity.holdUntil - Date.now()));
+      holdTimer = setTimeout(async () => {
+        // On wake, this deadline may run before the poll has read a recorded
+        // Stop. Finish the current scan before deriving a pose from old facts.
+        await scan();
+        if (current.activity.holdUntil && current.activity.holdUntil <= Date.now()) publish();
+      }, Math.max(0, current.activity.holdUntil - Date.now()));
     }
   };
-  async function scan() {
-    if (scanning || closed) return;
-    scanning = true;
-    try {
-      const names = (await readdir(folder)).filter(name => name.endsWith('.json') && !seen.has(name));
-      if (!names.length) return;
-      const events = await Promise.all(names.map(name => readFile(join(folder, name), 'utf8').then(JSON.parse)));
-      names.forEach(name => seen.add(name));
-      for (const event of events) (event.received_at >= observedSince ? observed : history).push(event);
-      publish();
-    } catch (error) { publish(error); }
-    finally { scanning = false; }
+  function scan() {
+    if (closed) return;
+    if (scanning) return scanning;
+    scanning = (async () => {
+      try {
+        const names = (await readdir(folder)).filter(name => name.endsWith('.json') && !seen.has(name));
+        if (!names.length) return;
+        const events = await Promise.all(names.map(name => readFile(join(folder, name), 'utf8').then(JSON.parse)));
+        names.forEach(name => seen.add(name));
+        for (const event of events) (event.received_at >= observedSince ? observed : history).push(event);
+        publish();
+      } catch (error) { publish(error); }
+    })().finally(() => { scanning = null; });
+    return scanning;
   }
   const events = await readEvents(directory);
   for (const event of events) {

@@ -3,7 +3,7 @@ import {fileURLToPath} from 'node:url';
 import {join} from 'node:path';
 import {homedir} from 'node:os';
 import {readFile,writeFile,mkdir} from 'node:fs/promises';
-import {union,contains,validRect,initialPosition} from './geometry.mjs';
+import {union,contains,validRect,initialPosition,sameDisplayLayout} from './geometry.mjs';
 import {APP_URL,installProtocol} from './protocol.mjs';
 import {createSessionObserver} from './sessions.mjs';
 import {isCaptureEnabled,setCaptureEnabled} from '../codex-hooks/control.mjs';
@@ -148,9 +148,11 @@ if(!app.requestSingleInstanceLock()){app.quit();}else{
  tray=new Tray(icon);tray.setToolTip('Desktop Dragon');tray.on('click',popup);tray.on('right-click',popup);
  pointerTimer=setInterval(hitTest,33);
  const screenChanged=()=>{
-  refreshDisplays();position=initialPosition(displays,position);regions=[];pointerDown=false;
+  const previous=displays;refreshDisplays();
+  if(sameDisplayLayout(previous,displays))return;
+  regions=[];
   win.setBounds(desktop);
-  send('dragon:layout',layout());action({type:'reset'});
+  send('dragon:layout',layout());
  };
  screen.on('display-added',screenChanged);screen.on('display-removed',screenChanged);screen.on('display-metrics-changed',screenChanged);
  app.on('before-quit',()=>{clearInterval(pointerTimer);clearTimeout(saveTimer);observer.close();tray.destroy();});
