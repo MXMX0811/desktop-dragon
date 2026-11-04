@@ -32,7 +32,7 @@ export async function createScene({PIXI:P,canvas}){
  const tailMask=new P.Graphics().rect(0,1030,1254,400).fill(0xffffff);tailLayer.addChild(tailMask);tailFront.m.mask=tailMask;
  const writing=await mesh(foreground,'./textures','arm-pen.png',{x:292,y:626},43,31);
  const resting=await mesh(foreground,'./textures','arm-rest.png',{x:663,y:627},35,29);
- const question=createQuestionBubble(P);question.container.position.set(ox+1050,oy+245);app.stage.addChild(question.container);
+ const question=createQuestionBubble(P);question.container.position.set(ox+1050,oy+245);question.container.scale.set((2400/1254)*(114/115));app.stage.addChild(question.container);
  let lastBlink=-1,lastAttention=-1;
  const deform=(part,point)=>{for(let i=0;i<part.rest.length;i+=2){const p=point(part.rest[i]+part.bounds.x,part.rest[i+1]+part.bounds.y);part.buffer.data[i]=p[0]-part.bounds.x;part.buffer.data[i+1]=p[1]-part.bounds.y;}part.buffer.update();};
  return {app,root,blink,

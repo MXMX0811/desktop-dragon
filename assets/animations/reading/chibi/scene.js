@@ -44,7 +44,7 @@ export async function createScene({PIXI:P,canvas}){
    sprite.pivot.x=grip[0]-part.bounds.x;sprite.position.x=grip[0];sprite.scale.x=READING_HAND_WIDTH;
   }
  }
- const question=createQuestionBubble(P);question.container.position.set(1000,230);question.container.scale.set(1.05);root.addChild(question.container);
+ const question=createQuestionBubble(P);question.container.position.set(1000,230);question.container.scale.set((2400/1254)*(114/115));root.addChild(question.container);
  let lastBlink=-1,lastAttention=-1;
  function drawLeaf(leaf){
   const at=(u,v)=>{const p=leafPoint(u,v,leaf.progress);return [p[0]-350,p[1]-430];};

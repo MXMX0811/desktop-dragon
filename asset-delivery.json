@@ -357,7 +357,8 @@
     {
       "source": "chibi-scenes/drawing-scene.js",
       "path": "assets/animations/drawing/chibi/scene.js",
-      "group": "current"
+      "group": "current",
+      "notes": "2026-11-04按用户要求将待确认问号按可见轮廓高度对齐正比工作；在制作源完成后同步，保持原弹出与摇动。"
     },
     {
       "source": "chibi-scenes/question-art.js",
@@ -382,7 +383,8 @@
     {
       "source": "chibi-scenes/reading-scene.js",
       "path": "assets/animations/reading/chibi/scene.js",
-      "group": "current"
+      "group": "current",
+      "notes": "2026-11-04按用户要求将待确认问号按可见轮廓高度对齐正比工作；在制作源完成后同步，保持原弹出与摇动。"
     },
     {
       "source": "chibi-scenes/reading-shapes.js",
@@ -417,7 +419,8 @@
     {
       "source": "chibi-scenes/work-scene.js",
       "path": "assets/animations/work/chibi/scene.js",
-      "group": "current"
+      "group": "current",
+      "notes": "2026-11-04按用户要求将待确认问号按可见轮廓高度对齐正比工作；在制作源完成后同步，保持原弹出与摇动。"
     },
     {
       "source": "colors/reference-palette.mjs",
@@ -534,7 +537,8 @@
     {
       "source": "drawing-animation/scene.js",
       "path": "assets/animations/drawing/normal/scene.js",
-      "group": "current"
+      "group": "current",
+      "notes": "2026-11-04按用户要求将待确认问号按可见轮廓高度对齐正比工作；在制作源完成后同步，保持原弹出与摇动。"
     },
     {
       "source": "knowledge/accepted-animations-2026-10-31.txt",
@@ -714,7 +718,8 @@
     {
       "source": "runtime/generated/reading.js",
       "path": "assets/animations/reading/normal/scene.js",
-      "group": "current"
+      "group": "current",
+      "notes": "2026-11-04按用户要求将待确认问号按可见轮廓高度对齐正比工作；在制作源完成后同步，保持原弹出与摇动。"
     },
     {
       "source": "runtime/generated/work.js",

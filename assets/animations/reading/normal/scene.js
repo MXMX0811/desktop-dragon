@@ -569,7 +569,7 @@ class DragonReadingController {
         this.lastLift=p;
       }
       this.question.visible=frame.questionScale>0;
-      this.question.scale.set(Math.max(0,frame.questionScale));
+      this.question.scale.set(Math.max(0,frame.questionScale)*(1536/1254)*(114/128));
       this.question.alpha=frame.questionAlpha;
       this.questionGlyph.rotation=frame.questionRotation;
       const attention=clamp(frame.headLift),head=this.scene.headPoint(333,197,attention);

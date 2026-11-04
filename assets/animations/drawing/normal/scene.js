@@ -16,7 +16,7 @@ export async function createScene({PIXI:P,canvas}){
  const tail=await mesh('tail',pieces.tail.bounds,49,61);
  const arm=await mesh('arm',pieces.arm.bounds,35,55);
  const eyes=await createEyes(),eyeTexture=P.Texture.from(eyes.canvas),eyeSprite=new P.Sprite({texture:eyeTexture});root.addChild(eyeSprite);
- const question=createQuestionBubble(P);question.container.position.set(ox+735,oy+125);question.container.scale.set(.95);app.stage.addChild(question.container);
+ const question=createQuestionBubble(P);question.container.position.set(ox+735,oy+125);question.container.scale.set((1536/1254)*(114/115));app.stage.addChild(question.container);
  const deform=(part,point)=>{for(let i=0;i<part.rest.length;i+=2){const p=point(part.rest[i]+part.bounds.x,part.rest[i+1]+part.bounds.y);part.buffer.data[i]=p[0]-part.bounds.x;part.buffer.data[i+1]=p[1]-part.bounds.y;}part.buffer.update();};
  let lastBlink=-1,lastAttention=-1;
  return {app,root,

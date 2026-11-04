@@ -65,7 +65,7 @@ export async function createScene({PIXI:P,canvas}){
  // The laptop lid also covers hanging hair below its rim.
  sprite('screen');root.addChild(eyeSprite);root.addChild(light);
  const busy=createBusyScribble(P);busy.container.position.set(190,335);busy.container.scale.set(1.1);root.addChild(busy.container);
- const question=createQuestionBubble(P,{tailRight:true});question.container.position.set(190,335);question.container.scale.set(1.1);root.addChild(question.container);
+ const question=createQuestionBubble(P,{tailRight:true});question.container.position.set(190,335);question.container.scale.set((2400/1254)*(114/115));root.addChild(question.container);
  let lastBlink=-1,lastAttention=-1;
  return {app,root,eyes,layout,chair,
   render(frame){
