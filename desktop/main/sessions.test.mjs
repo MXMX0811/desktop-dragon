@@ -153,6 +153,70 @@ test('unknown session facts do not retain a thinking pose without observed activ
   assert.equal(view.capabilities.successfulCompletion,false);
 });
 
+test('non-persistent fork lifecycle never enters the desktop task inventory', () => {
+  const events=[event('SessionStart',{turn_id:undefined,source:'fork',has_transcript_path:false}),
+    event('UserPromptSubmit',{has_transcript_path:false}),event('Interrupt'),
+    event('SessionEnd',{turn_id:undefined})];
+  for(let length=1;length<=events.length;length++) {
+    const view=projectSessions([],events.slice(0,length),since,'thinking');
+    assert.deepEqual(view.sessions,[]);
+    assert.equal(view.activity.scene,'standby');
+    assert.equal(view.activity.activeCount,0);
+    assert.equal(view.activity.agentCount,0);
+    assert.equal(view.activity.waiting,false);
+  }
+});
+
+test('persistent forks, non-fork sessions and sessions with unknown persistence remain visible', () => {
+  for(const start of [
+    {source:'fork',has_transcript_path:true},
+    {source:'fork'},
+    {source:'startup',has_transcript_path:false},
+    {source:'resume',has_transcript_path:true},
+  ]) {
+    const view=projectSessions([], [event('SessionStart',{turn_id:undefined,...start}),
+      event('UserPromptSubmit')],since);
+    assert.equal(view.sessions.length,1);
+    assert.equal(view.activity.activeCount,1);
+    assert.equal(view.activity.scene,'thinking');
+  }
+  const child=projectSessions([], [event('SubagentStart',
+    {turn_id:'child-turn',agent_id:'child',has_transcript_path:false})],since);
+  assert.equal(child.activity.activeCount,1);
+  assert.equal(child.activity.agentCount,1);
+});
+
+test('fork identity crosses the observation boundary without reviving historical activity', () => {
+  const history=[event('SessionStart',{turn_id:undefined,source:'fork',has_transcript_path:false})];
+  const observed=[event('UserPromptSubmit'),
+    event('UserPromptSubmit',{session_id:'formal'}),
+    event('PreToolUse',{session_id:'formal',tool_use_id:'read',tool_kind:'read',tool_name:'Bash'}),
+    event('SubagentStart',{session_id:'formal',turn_id:'child-turn',agent_id:'child'})];
+  const view=projectSessions(history,observed,since);
+  assert.deepEqual(view.sessions.map(session=>session.session_id),['formal']);
+  assert.equal(view.activity.scene,'reading');
+  assert.equal(view.activity.activeCount,1);
+  assert.equal(view.activity.toolCount,1);
+  assert.equal(view.activity.agentCount,1);
+});
+
+test('non-persistent forks cannot introduce question or tool poses into a real task', () => {
+  const question={tool_use_id:'question',tool_name:'request_user_input_async',input_question_count:1};
+  const events=[event('UserPromptSubmit',{session_id:'formal'}),
+    event('SessionStart',{turn_id:undefined,source:'fork',has_transcript_path:false}),
+    event('UserPromptSubmit'),event('PreToolUse',{tool_use_id:'read',tool_kind:'read'}),
+    event('PostToolUse',{tool_use_id:'read'}),event('PreToolUse',question),
+    event('PostToolUse',{...question,input_request_accepted:true}),
+    event('SubagentStart',{turn_id:'child-turn',agent_id:'child'})];
+  const view=projectSessions([],events,since,'reading',Date.parse(events.at(-1).received_at));
+  assert.equal(view.activity.scene,'thinking');
+  assert.equal(view.activity.activeCount,1);
+  assert.equal(view.activity.toolCount,0);
+  assert.equal(view.activity.agentCount,0);
+  assert.equal(view.activity.waiting,false);
+  assert.equal(view.activity.holdUntil,null);
+});
+
 test('permission event does not claim confirmed waiting', () => {
   const view = projectSessions([], [event('UserPromptSubmit'), event('PermissionRequest')], since);
   assert.equal(view.sessions[0].state, 'permission_requested');
@@ -419,5 +483,159 @@ test('disabled observer keeps history without watching; re-enable starts fresh o
   } finally {
     observer?.close();
     await rm(directory, {recursive:true, force:true});
+  }
+});
+
+test('long logs keep historical and stopped sessions as summaries, including unanswered questions', async t => {
+  const start=Date.parse('2030-01-01T00:00:00.000Z');
+  t.mock.timers.enable({apis:['setTimeout','setInterval','Date'],now:start});
+  const directory=await mkdtemp(join(tmpdir(),'dragon-summary-memory-'));
+  const updates=new EventEmitter();
+  let observer, index=0;
+  const make=(name, extra={})=>event(name,{event_id:`long-${String(index).padStart(6,'0')}`,
+    received_at:new Date(start+index++).toISOString(),...extra});
+  const write=async events=>{
+    for(let offset=0;offset<events.length;offset+=32) {
+      await Promise.all(events.slice(offset,offset+32).map(item=>saveEvent(item,directory)));
+    }
+  };
+  try {
+    const history=[make('UserPromptSubmit',{received_at:'2000-01-01T00:00:00.000Z'})];
+    for(let i=0;i<500;i++) {
+      history.push(make('PreToolUse',{tool_use_id:`old-${i}`,received_at:'2000-01-01T00:00:00.001Z'}),
+        make('PostToolUse',{tool_use_id:`old-${i}`,received_at:'2000-01-01T00:00:00.002Z'}));
+    }
+    history.push(make('Stop',{received_at:'2000-01-01T00:00:00.003Z'}));
+    await write(history);
+    observer=await createSessionObserver(snapshot=>updates.emit('snapshot',snapshot),{directory});
+    assert.deepEqual(observer.retainedCounts(),{events:0,indexedFiles:history.length,sessions:1,liveSessions:0,turns:0,tools:0});
+    assert.equal(observer.snapshot().sessions[0].state,'unknown');
+    assert.equal(observer.snapshot().activity.scene,'standby');
+
+    const observed=[make('UserPromptSubmit',{turn_id:'new-turn'})];
+    for(let i=0;i<500;i++) {
+      const call={turn_id:'new-turn',tool_use_id:`new-${i}`,tool_name:'Read',tool_kind:'read'};
+      observed.push(make('PreToolUse',call),make('PostToolUse',call));
+    }
+    const question={turn_id:'new-turn',tool_use_id:'question',tool_name:'request_user_input_async',input_question_count:2};
+    observed.push(make('PreToolUse',question),make('PostToolUse',{...question,input_request_accepted:true}),
+      make('Stop',{turn_id:'new-turn'}));
+    await write(observed);
+    const changed=once(updates,'snapshot');t.mock.timers.tick(3000);
+    const snapshot=(await changed)[0];
+    assert.equal(snapshot.activity.scene,'reading');
+    assert.equal(snapshot.activity.pendingInputCount,2);
+    assert.equal(snapshot.sessions[0].state,'stop_observed');
+    assert.equal(snapshot.connection.receivedCount,observed.length);
+    assert.deepEqual(observer.retainedCounts(),{events:0,indexedFiles:history.length+observed.length,
+      sessions:1,liveSessions:0,turns:0,tools:0});
+    assert.equal(snapshot.sessions[0].tools.length,0);
+    assert.ok(!('turns' in snapshot.sessions[0]));
+  } finally {
+    observer?.close();t.mock.timers.reset();await rm(directory,{recursive:true,force:true});
+  }
+});
+
+test('incremental scans and session rebuilds match batch state through delayed writes and exact replies', async t => {
+  const start=Date.parse('2030-01-01T00:00:00.000Z');
+  t.mock.timers.enable({apis:['setTimeout','setInterval','Date'],now:start});
+  const directory=await mkdtemp(join(tmpdir(),'dragon-incremental-scan-'));
+  const updates=new EventEmitter();
+  const recorded=[];
+  let observer;
+  const at=(name,time,extra={})=>event(name,{received_at:new Date(start+time).toISOString(),...extra});
+  const question={tool_use_id:'question',tool_name:'request_user_input_async',input_question_count:2};
+  const child={turn_id:'child',agent_id:'agent'};
+  try {
+    observer=await createSessionObserver(snapshot=>updates.emit('snapshot',snapshot),{directory});
+    const check=async batch=>{
+      const previous=observer.snapshot().activity.scene;
+      for(const item of batch) await saveEvent(item,directory);
+      recorded.push(...batch);
+      const changed=once(updates,'snapshot');t.mock.timers.tick(1000);
+      const actual=(await changed)[0];
+      const expected=projectSessions([],recorded,new Date(start).toISOString(),previous,Date.now());
+      const {connection,...projection}=actual;
+      assert.deepEqual(projection,expected);
+      assert.equal(connection.receivedCount,recorded.length);
+      return actual;
+    };
+    let snapshot=await check([at('UserPromptSubmit',1),
+      at('PreToolUse',2,{tool_use_id:'read',tool_name:'Read',tool_kind:'read'}),
+      at('PreToolUse',3,question),at('PostToolUse',4,{...question,input_request_accepted:true}),at('Stop',5)]);
+    assert.equal(snapshot.activity.pendingInputCount,2);
+    assert.equal(observer.retainedCounts().liveSessions,0);
+
+    // Resuming a released session must still remember exact question replies and
+    // old call identities. An output arriving late does not revive the old call.
+    snapshot=await check([at('UserPromptSubmit',1001,{turn_id:'next',
+      input_replies:[{tool_use_id:'question',question_index:0}]}),
+      at('PostToolUse',6,{tool_use_id:'read'}),
+      at('PostToolUse',1002,{...question,input_request_accepted:true}),
+      at('SubagentStart',1003,child),at('PreToolUse',1004,{...child,tool_use_id:'child-tool',tool_name:'Bash'}),
+      at('Stop',1005,{turn_id:'next'})]);
+    assert.equal(snapshot.activity.pendingInputCount,1);
+    assert.equal(snapshot.activity.agentCount,1);
+    assert.equal(observer.retainedCounts().liveSessions,1);
+
+    // This timestamp belongs inside the already reduced live session. Replay
+    // must preserve a child working after the root stops and the question pose.
+    snapshot=await check([at('Interrupt',7),at('PreToolUse',2001,{tool_use_id:'read',tool_name:'Read'})]);
+    assert.equal(snapshot.activity.toolCount,1);
+    assert.equal(snapshot.activity.pendingInputCount,1);
+
+    snapshot=await check([at('UserPromptSubmit',3001,{turn_id:'last',
+      input_replies:[{tool_use_id:'question',question_index:1}]}),
+      at('SubagentStop',3002,child),at('Interrupt',3003,{turn_id:'last'})]);
+    assert.equal(snapshot.activity.pendingInputCount,0);
+    assert.equal(observer.retainedCounts().liveSessions,0);
+
+    snapshot=await check([at('PostToolUse',4001,{...question,input_request_accepted:true})]);
+    assert.equal(snapshot.activity.pendingInputCount,0);
+    assert.equal(snapshot.activity.scene,'standby');
+    snapshot=await check([at('SessionEnd',5001,{turn_id:undefined})]);
+    assert.equal(snapshot.sessions[0].state,'session_ended');
+    assert.equal(observer.retainedCounts().tools,0);
+  } finally {
+    observer?.close();t.mock.timers.reset();await rm(directory,{recursive:true,force:true});
+  }
+});
+
+test('live observer excludes a transient fork started before launch and retains normal tasks', async t => {
+  const start=Date.parse('2030-01-01T00:00:00.000Z');
+  t.mock.timers.enable({apis:['setTimeout','setInterval','Date'],now:start});
+  const directory=await mkdtemp(join(tmpdir(),'dragon-transient-fork-'));
+  const updates=new EventEmitter();
+  let observer;
+  const at=(name,time,extra={})=>event(name,{received_at:new Date(start+time).toISOString(),...extra});
+  try {
+    await saveEvent(at('SessionStart',-100,{turn_id:undefined,source:'fork',has_transcript_path:false}),directory);
+    observer=await createSessionObserver(snapshot=>updates.emit('snapshot',snapshot),{directory});
+    assert.deepEqual(observer.snapshot().sessions,[]);
+    const check=async batch=>{
+      for(const item of batch)await saveEvent(item,directory);
+      const changed=once(updates,'snapshot');t.mock.timers.tick(1000);
+      return (await changed)[0];
+    };
+    let view=await check([at('UserPromptSubmit',1)]);
+    assert.equal(view.activity.scene,'standby');
+    assert.equal(view.connection.receivedCount,1);
+    assert.deepEqual(view.sessions,[]);
+
+    view=await check([at('SessionStart',1001,{session_id:'formal',turn_id:undefined,source:'fork',has_transcript_path:true}),
+      at('UserPromptSubmit',1002,{session_id:'formal'})]);
+    assert.equal(view.activity.scene,'thinking');
+    assert.equal(view.activity.activeCount,1);
+    assert.deepEqual(view.sessions.map(session=>session.session_id),['formal']);
+
+    view=await check([at('Interrupt',2001),at('SessionEnd',2002,{turn_id:undefined})]);
+    assert.equal(view.activity.activeCount,1);
+    assert.equal(observer.retainedCounts().liveSessions,1);
+    view=await check([at('Stop',3001,{session_id:'formal'})]);
+    assert.equal(view.activity.scene,'standby');
+    assert.equal(view.activity.activeCount,0);
+    assert.equal(observer.retainedCounts().liveSessions,0);
+  } finally {
+    observer?.close();t.mock.timers.reset();await rm(directory,{recursive:true,force:true});
   }
 });

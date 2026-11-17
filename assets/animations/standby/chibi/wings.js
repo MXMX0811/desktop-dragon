@@ -1,3 +1,5 @@
+import {createPart, drawPart} from './parts.js';
+
 // Wing masks measured on the adopted redraw/underlay.png, in its 1254px space.
 // Left/right are screen directions. Front hair stays in the underlay; the full
 // inner cut is pinned, so flutter cannot pull that hair away from the body.
@@ -70,16 +72,13 @@ export function prepareWings(source, cleanUnderlay) {
     // Repair complete rear locks on either side, beyond the moving wing edge.
     // Cutting this repair at the old silhouette would truncate the newly
     // exposed hair. The center face/body and the upper hairstyle stay native.
-    const mask = canvas(), m = mask.getContext('2d');
-    m.fillRect(shape.direction<0?0:880, 610, shape.direction<0?420:374, 350);
-    const replacement = canvas(), r = replacement.getContext('2d');
-    r.drawImage(cleanUnderlay, 0, 0);
-    r.globalCompositeOperation = 'destination-in'; r.drawImage(mask, 0, 0);
-    ctx.globalCompositeOperation = 'destination-out'; ctx.drawImage(mask, 0, 0);
-    ctx.globalCompositeOperation = 'source-over'; ctx.drawImage(replacement, 0, 0);
-    const texture = canvas(), t = texture.getContext('2d');
-    t.clip(path); t.drawImage(source, 0, 0);
+    const repairX = shape.direction < 0 ? 0 : 880, repairWidth = shape.direction < 0 ? 420 : 374;
+    ctx.clearRect(repairX, 610, repairWidth, 350);
+    ctx.drawImage(cleanUnderlay, repairX, 610, repairWidth, 350, repairX, 610, repairWidth, 350);
     const [x, y, width, height] = shape.bounds;
+    const texture = createPart([x - 2, y - 2, width + 4, height + 4], t => {
+      t.clip(path); t.drawImage(source, 0, 0);
+    });
     const vertices = [], triangles = [], columns = 20, rows = 14;
     for (let j = 0; j <= rows; j++) for (let i = 0; i <= columns; i++)
       vertices.push([x + i * width / columns, y + j * height / rows]);
@@ -108,12 +107,12 @@ function triangle(ctx, image, s, d) {
   }
   ctx.closePath(); ctx.clip();
   ctx.transform(xx,xy,yx,yy,p[0]-xx*a[0]-yx*a[1],p[1]-xy*a[0]-yy*a[1]);
-  ctx.drawImage(image,0,0); ctx.restore();
+  drawPart(ctx,image); ctx.restore();
 }
 
 export function drawWings(ctx, prepared, amount) {
   for(const wing of prepared.wings) {
-    if(amount===0) {ctx.drawImage(wing.texture,0,0);continue;}
+    if(amount===0) {drawPart(ctx,wing.texture);continue;}
     const dest=wing.vertices.map(([x,y])=>wingPoint(wing.shape,x,y,amount));
     for(const ids of wing.triangles)
       triangle(ctx,wing.texture,ids.map(i=>wing.vertices[i]),ids.map(i=>dest[i]));

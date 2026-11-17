@@ -6,6 +6,7 @@ import {areaAt,outsideEdge,union} from './geometry.js';
 import {SubagentCompanions} from '../../assets/shared/subagents/scene.js';
 import {IdleSleep} from './idle-sleep.js';
 import {SpeechBubble} from './bubble.js';
+import {GreetingSchedule,greetingScenes,nextGreetingBoundary} from './greetings.js';
 
 const $=id=>document.getElementById(id),bridge=window.dragon;
 const stage=$('stage'),characters=$('characters');
@@ -13,12 +14,33 @@ let companions,bubble;
 let layout,areas=[],interaction,presenter,view={scene:'standby',form:'chibi',waiting:false,sleeping:false,suspended:false};
 let eye,frame=0,lastReport='',snapshot=null,following=true,disposed=false;
 let form=localStorage.getItem('dragon.taskForm')==='normal'?'normal':'chibi';
+const greetings=new GreetingSchedule(localStorage.getItem('dragon.greetingPeriod'));
+let greetingTimer=null;
 const idleSleep=new IdleSleep(()=>setView({...view,sleeping:true}));
 
+function syncPresentation(){
+ const allowed=Boolean(following&&snapshot&&!snapshot.error&&snapshot.activity.activeCount===0&&
+  !snapshot.activity.waiting&&view.scene==='standby'&&!view.sleeping&&!view.waiting&&!view.suspended&&
+  !interaction.active&&!presenter.hidden&&!document.hidden);
+ const previous=greetings.lastPeriod;
+ const scene=greetings.select({allowed,ready:!presenter.busy&&!interaction.pointer&&Boolean(presenter.current)},Date.now());
+ if(previous!==greetings.lastPeriod)localStorage.setItem('dragon.greetingPeriod',greetings.lastPeriod);
+ const target=scene?{scene,form:'chibi',waiting:false,sleeping:false,suspended:false}:view;
+ if(JSON.stringify(target)!==JSON.stringify(interaction.target))interaction.setTarget(target);
+}
+function scheduleGreetingBoundary(){
+ clearTimeout(greetingTimer);
+ greetingTimer=setTimeout(()=>{scheduleGreetingBoundary();scheduleReport();},nextGreetingBoundary(Date.now())-Date.now());
+}
+function completeGreeting(displayed){
+ if(greetings.active===displayed.scene){greetings.finish();syncPresentation();}
+ else if(!following&&greetingScenes.has(view.scene)&&view.scene===displayed.scene){following=true;followSnapshot();}
+ syncIdleSleep();scheduleReport();
+}
 function syncIdleSleep(){
  idleSleep.setEligible(Boolean(!disposed&&following&&snapshot&&!snapshot.error&&
   snapshot.activity.activeCount===0&&view.scene==='standby'&&!view.waiting&&!view.sleeping&&!view.suspended&&
-  !interaction.active&&!interaction.pointer&&!presenter.busy&&!presenter.hidden&&!document.hidden));
+  !greetings.active&&!interaction.active&&!interaction.pointer&&!presenter.busy&&!presenter.hidden&&!document.hidden));
 }
 
 function positionPanel(){
@@ -73,13 +95,13 @@ function renderPanel(){
 }
 function openPanel(){if(interaction.active)return;bubble.hide({immediate:true});$('panel').hidden=false;renderPanel();}
 function bubbleContext(){
- const displayed=presenter.current.view;
+ const displayed=interaction.current?.kind==='peek'?interaction.target:presenter.current.view;
  return {...displayed,mode:interaction.current?.kind||'normal',hasAgents:companions.active};
 }
 function bubblePlacement(){
  const current=interaction.current?.kind==='peek'?interaction.current:null,entry=current||presenter.current;
  const point=current?current.eye():interaction.eye();
- return {eye:point,body:rect(entry.element),area:current?.area||areaAt(point,areas)};
+ return {eye:point,body:greetingScenes.has(entry.view?.scene)?bodyHit(entry.element,entry.view.scene,entry.view.form):rect(entry.element),area:current?.area||areaAt(point,areas)};
 }
 function touch(count,kind='normal'){
  idleSleep.restart();
@@ -101,7 +123,7 @@ function changeForm(){
 function setView(next){
  view={...next,form:dualFormScenes.has(next.scene)?(next.form||form):'chibi'};
  if(presenter?.current&&!interaction.active&&view.form!==presenter.current.view.form)bubble?.hide({immediate:true});
- interaction.setTarget(view);syncIdleSleep();scheduleReport();
+ syncPresentation();syncIdleSleep();scheduleReport();
 }
 function followSnapshot(){
  if(!following||!snapshot)return;
@@ -123,6 +145,7 @@ function rect(element){
 }
 // The visual canvas includes transparent rig padding; only the body receives clicks.
 const bodyBoxes={
+ 'coffee:chibi':[.18,.20,.65,.75], 'goodnight:chibi':[.10,.31,.82,.65],
  'standby:chibi':[.23,.13,.56,.78], 'thinking:chibi':[.20,.13,.60,.81],
  'reading:chibi':[.22,.12,.56,.80], 'work:chibi':[.29,.18,.44,.71],
  'drawing:chibi':[.29,.17,.44,.72], 'reading:normal':[.22,.08,.58,.84],
@@ -134,7 +157,7 @@ function bodyHit(element,kind,form){
 }
 function refreshCompanions(){
  const current=presenter.current;
- const active=following&&snapshot?.activity.agentCount>0&&!interaction.active&&!presenter.busy&&current.view.scene!=='standby';
+ const active=following&&snapshot?.activity.agentCount>0&&!interaction.active&&!presenter.busy&&['reading','work','drawing','thinking'].includes(current.view.scene);
  if(active)companions.setAnchor(current.element,current.view);
  companions.setActive(active);
  // Inactive clouds must finish retracting, including while the pet is dragged.
@@ -142,8 +165,8 @@ function refreshCompanions(){
 }
 function report(){
  cancelAnimationFrame(frame);frame=0;if(disposed||!layout)return;
- if(interaction&&presenter)syncIdleSleep();
- if(!presenter?.current){
+ if(interaction&&presenter){syncPresentation();syncIdleSleep();}
+ if(!presenter?.current&&!interaction?.current){
   if(!$('error').hidden){const r=rect($('error'));bridge.report({bounds:union([r],18),hitRegions:[r],position:eye,mode:'normal',pointerDown:false});}
   return;
  }
@@ -202,12 +225,19 @@ try{
   onChange:()=>{
    if(!interaction.active){eye=interaction.eye();interaction.position={...eye};}
    $('error').hidden=true;report();
-  },onError:showError,
+  },onError:showError,onComplete:completeGreeting,onSettled:scheduleReport,
  });
  interaction=new PetInteraction({stage,presenter,createDrag,createFlight,createPeek,taskEye,edgeWidth:DRAG_EDGE_WIDTH,onClick:touch,
   pointFromEvent:e=>({x:e.screenX-layout.desktop.x,y:e.screenY-layout.desktop.y}),
   workAreaAt:p=>areaAt(p,areas),edgeAt:(p,a)=>outsideEdge(p,a,areas,DRAG_EDGE_WIDTH),
-  onChange:()=>{if(interaction.pointer?.dragged){closePanel();eye={...interaction.position};if(view.sleeping)setView({...view,sleeping:false});}syncIdleSleep();scheduleReport();},onError:showError,
+  onChange:()=>{
+   if(interaction.pointer?.dragged){
+    closePanel();eye={...interaction.position};
+    if(!following&&greetingScenes.has(view.scene)){following=true;followSnapshot();}
+    else if(view.sleeping)setView({...view,sleeping:false});
+   }
+   syncPresentation();syncIdleSleep();scheduleReport();
+  },onError:showError,
  });
  bubble=new SpeechBubble(stage,{readQuota:()=>bridge.quota(),getPlacement:bubblePlacement,onChange:scheduleReport});
  interaction.position={...eye};interaction.setTarget(view);
@@ -216,16 +246,23 @@ try{
  const offAction=bridge.onAction(action=>{
   if(action.type==='dismissBubble')bubble.hide({immediate:true});
   else if(action.type==='form')changeForm();
-  else if(action.type==='scene'){closePanel();following=false;setView({scene:action.scene,form,waiting:Boolean(action.waiting),waitingPose:Boolean(action.waiting),sleeping:Boolean(action.sleeping),suspended:false});}
+  else if(action.type==='scene'){closePanel();greetings.dismiss(Date.now());localStorage.setItem('dragon.greetingPeriod',greetings.lastPeriod);following=false;setView({scene:action.scene,form,waiting:Boolean(action.waiting),waitingPose:Boolean(action.waiting),sleeping:Boolean(action.sleeping),suspended:false});}
   else if(action.type==='follow'){following=true;followSnapshot();if(!$('panel').hidden)renderPanel();}
   else if(action.type==='panel')openPanel();
-  else if(action.type==='visible'){if(!action.visible)bubble.hide({immediate:true});presenter.setVisible(action.visible);interaction.setPaused(!action.visible);syncIdleSleep();}
+  else if(action.type==='visible'){
+   if(!action.visible){bubble.hide({immediate:true});if(!following&&greetingScenes.has(view.scene)){following=true;followSnapshot();}}
+   presenter.setVisible(action.visible);interaction.setPaused(!action.visible);syncPresentation();syncIdleSleep();scheduleReport();
+  }
   else if(action.type==='reset'){
    bubble.hide({immediate:true});closePanel();eye={...layout.position};interaction.resetPosition(eye);scheduleReport();
   }
  });
- const offSessions=bridge.onSessions(value=>{snapshot=value;followSnapshot();if(!$('panel').hidden)renderPanel();});
- snapshot=await bridge.sessions();followSnapshot();
+ const offSessions=bridge.onSessions(value=>{
+  snapshot=value;
+  if(!following&&greetingScenes.has(view.scene)&&(value.activity.activeCount>0||value.activity.waiting))following=true;
+  followSnapshot();if(!$('panel').hidden)renderPanel();
+ });
+ snapshot=await bridge.sessions();followSnapshot();scheduleGreetingBoundary();
  $('close-panel').onclick=closePanel;
  stage.addEventListener('contextmenu',event=>{event.preventDefault();idleSleep.restart();bubble.hide({immediate:true});closePanel();bridge.menu();});
  stage.addEventListener('pointerdown',event=>{
@@ -233,6 +270,6 @@ try{
   if(!event.target.closest('#panel'))closePanel();
  },true);
  document.addEventListener('keydown',event=>{if(event.key==='Escape'){closePanel();bubble.hide();}});
- document.addEventListener('visibilitychange',()=>{if(document.hidden)bubble.hide({immediate:true});presenter.setVisible(!document.hidden);syncIdleSleep();});
- addEventListener('pagehide',()=>{disposed=true;bubble.destroy();idleSleep.destroy();cancelAnimationFrame(frame);resize.disconnect();offLayout();offAction();offSessions();companions.destroy();interaction.destroy();presenter.destroy();},{once:true});
+ document.addEventListener('visibilitychange',()=>{if(document.hidden)bubble.hide({immediate:true});presenter.setVisible(!document.hidden);syncPresentation();syncIdleSleep();scheduleReport();});
+ addEventListener('pagehide',()=>{disposed=true;clearTimeout(greetingTimer);bubble.destroy();idleSleep.destroy();cancelAnimationFrame(frame);resize.disconnect();offLayout();offAction();offSessions();companions.destroy();interaction.destroy();presenter.destroy();},{once:true});
 }catch(error){showError(error);}

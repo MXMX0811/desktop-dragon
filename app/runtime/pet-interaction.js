@@ -60,7 +60,7 @@ export class PetInteraction {
  down(e){
   if(e.button!==0||this.pointer||!e.target.closest('[data-pet-hit],.character canvas'))return;
   // The flight clip owns its path until ended; the edge portrait is draggable.
-  if(this.mode==='flight'||!this.presenter.current)return;
+  if(this.mode==='flight'||(!this.current&&!this.presenter.current))return;
   e.preventDefault();const p=this.point(e),eye=this.current?.eye()||this.eye();
   this.pointer={id:e.pointerId,start:p,last:p,time:e.timeStamp,eye,dragged:false};
   this.stage.setPointerCapture(e.pointerId);this.onChange();
@@ -92,12 +92,12 @@ export class PetInteraction {
    this.current?.release?.();const area=this.workArea(this.position);
    const side=this.edgeAt?this.edgeAt(this.position,area):releasedEdge(this.position.x-area.x,area.width,this.edgeWidth);
    this.desired=side?{kind:'flight',side,anchor,area}:{kind:'normal'};this.onChange();this.pump();
-  }else if(this.mode==='normal'){
+  }else if(this.mode==='normal'&&!this.current&&!this.busy&&this.presenter.current){
    this.clickCount=e.timeStamp-this.clickAt<=420?this.clickCount+1:1;this.clickAt=e.timeStamp;
    this.onClick(this.clickCount);this.onChange();
   }else if(this.mode==='peek'&&this.current?.kind==='peek'&&!this.busy&&!this.paused&&!this.hidden){
    this.current.touch();this.onClick(1,'peek');this.onChange();
-  }
+  }else this.onChange();
  }
  cancel(){
   const g=this.releaseCapture();if(!g)return;
@@ -112,7 +112,7 @@ export class PetInteraction {
   const shift=point=>({x:point.x+offset.x,y:point.y+offset.y});
   this.position=shift(this.position);
   // Task canvases share one parent, including an incoming return transition.
-  this.moveTask(shift(this.eye()));
+  if(this.presenter.current)this.moveTask(shift(this.eye()));
   if(this.pointer)for(const key of ['start','last','eye'])this.pointer[key]=shift(this.pointer[key]);
   // A display update changes coordinates, not the user's chosen interaction.
   // Include the desired object: an asset may still be loading asynchronously.
@@ -133,7 +133,7 @@ export class PetInteraction {
     const view=this.target;
     // The presenter retains its task scene while dragging. Resume that same
     // controller and painted canvas whenever the requested scene still matches.
-    entry=this.presenter.current.key===animationKey(view)?this.presenter.current:await this.presenter.prepare(view);
+    entry=this.presenter.current?.key===animationKey(view)?this.presenter.current:await this.presenter.prepare(view);
     if(this.destroyed||entry.key===animationKey(this.target))break;
     if(entry!==this.presenter.current)this.presenter.release(entry);
    }
@@ -190,7 +190,7 @@ export class PetInteraction {
     if(!this.matches(this.pending)){this.dispose(this.pending);this.pending=null;continue;}
     const previous=this.current,source=previous?.element||this.presenter.current.element;
     const sourceForm=previous?.form||this.presenter.current.view.form;
-    this.presenter.current.animation.setSuspended(true);
+    this.presenter.current?.animation.setSuspended(true);
     let cloud=sourceForm!==this.pending.form;
     if(cloud){
      this.transitionPair=[source,this.pending.element];this.cloud.fit(this.transitionPair);
@@ -219,6 +219,9 @@ export class PetInteraction {
     this.dispose(this.outgoing);this.outgoing=null;
     if(this.destroyed)break;
     if(this.current)this.presenter.setVisible(false);
+    // A settled edge portrait owns all visible resources. Reload the latest
+    // task on return; ordinary drags retain their controller for quick reuse.
+    if(this.current?.kind==='peek')this.presenter.releaseCurrent();
     if(this.current?.kind==='flight'&&this.desired.kind==='flight'&&!this.hidden&&!this.paused)await this.current.play();
     if(!this.current){this.presenter.update(this.target);await this.presenter.whenIdle();}
     this.onChange();

@@ -40,6 +40,17 @@ export async function readEvents(directory=dataDirectory) {
   const folder=join(directory,'events');
   await mkdir(folder,{recursive:true,mode:0o700});
   const files=(await readdir(folder)).filter(name=>name.endsWith('.json'));
-  const events=await Promise.all(files.map(async name=>JSON.parse(await readFile(join(folder,name),'utf8'))));
+  const events=[];
+  for await (const {event} of readEventFiles(files, directory)) events.push(event);
   return events.sort((a,b)=>a.received_at.localeCompare(b.received_at));
+}
+
+// Bound simultaneous file buffers when loading a long-running receiver's log.
+export async function* readEventFiles(names, directory=dataDirectory) {
+  const folder=join(directory,'events');
+  for (let offset=0;offset<names.length;offset+=32) {
+    const batch=await Promise.all(names.slice(offset,offset+32).map(async name =>
+      ({name,event:JSON.parse(await readFile(join(folder,name),'utf8'))})));
+    yield* batch;
+  }
 }

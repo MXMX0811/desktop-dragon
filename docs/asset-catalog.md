@@ -5,6 +5,7 @@
 | 资产 | 当前交付 | 确认与限制 |
 | --- | --- | --- |
 | 彩色应用图标与README teaser | `assets/icons/app.png`、`app.icns`、`app.ico` | 11/03用户提供并明确采纳Q版扒边头像；PNG保留1254×1254原图，ICNS/ICO仅作尺寸与容器转换。README左对齐展示。菜单栏黑白候选未随本次采纳 |
+| Q版白天递咖啡与夜间晚安 | `assets/animations/coffee/chibi/scene.js`、`assets/animations/goodnight/chibi/scene.js` | 11/17用户明确采用当前两版动画并要求实装；递咖啡手与杯固定、闭眼开口笑及振翅；晚安抱枕与慢眨眼，保留原嘴形。沿用脸部方向闭眼与嘴部固定横向中心的最终修正 |
 | Q版待机、休眠、掩嘴哈欠唤醒 | `assets/animations/standby/chibi/scene.js` | 10/29唤醒采用，10/31整体确认；唤醒1.5倍、点击振翅、醒后振翅，沿用当前呼吸调幅 |
 | 正比阅读与待确认 | `assets/animations/reading/normal/scene.js` | 双手握书，自动连翻；等待往返最初3倍速，10/31确认 |
 | 正比工作与待确认 | `assets/animations/work/normal/scene.js` | 自然敲键手、摘戴眼镜/托腮、1.5倍往返，10/31确认 |
@@ -59,3 +60,7 @@
 本轮六组状态深浅底检查与24项验证通过，进入、保持、返回各采样16帧，共288个样本。可见高度为29.45px；Q版阅读/工作随呼吸最高29.66px。未发现遮脸、越界或退出残留。检查材料位于制作区`software-preview/qa-question-size/`，不提交到软件仓库。macOS应用已重新打包。
 
 macOS原生动作菜单已核对Q版工作待确认稳定后的新尺寸，随后恢复“跟随会话状态”；没有留下手动待确认姿态。
+
+## 2026-11-04运行资源优化
+
+沿用本表已采纳形象和动作，调整画布尺寸、待机局部Canvas边界及贴图生命周期。1000档放大与原美术坐标保留；思考/扒边贴图退出时销毁。运行模块在制作区完成对照后交付，精确来源见`asset-delivery.json`，范围和视觉检查见[交付记录](asset-delivery.md)。这次优化不改变原始素材的既有限制。

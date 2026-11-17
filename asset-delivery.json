@@ -355,7 +355,7 @@
       "group": "current"
     },
     {
-      "source": "chibi-scenes/drawing-scene.js",
+      "source": "software-preview/qa-memory/render-sources/assets/animations/drawing/chibi/scene.js",
       "path": "assets/animations/drawing/chibi/scene.js",
       "group": "current",
       "notes": "2026-11-04按用户要求将待确认问号按可见轮廓高度对齐正比工作；在制作源完成后同步，保持原弹出与摇动。"
@@ -381,7 +381,7 @@
       "group": "current"
     },
     {
-      "source": "chibi-scenes/reading-scene.js",
+      "source": "software-preview/qa-memory/render-sources/assets/animations/reading/chibi/scene.js",
       "path": "assets/animations/reading/chibi/scene.js",
       "group": "current",
       "notes": "2026-11-04按用户要求将待确认问号按可见轮廓高度对齐正比工作；在制作源完成后同步，保持原弹出与摇动。"
@@ -397,7 +397,7 @@
       "group": "current"
     },
     {
-      "source": "chibi-scenes/thinking-scene.js",
+      "source": "software-preview/qa-memory/render-sources/assets/animations/thinking/chibi/scene.js",
       "path": "assets/animations/thinking/chibi/scene.js",
       "group": "current"
     },
@@ -417,7 +417,7 @@
       "group": "current"
     },
     {
-      "source": "chibi-scenes/work-scene.js",
+      "source": "software-preview/qa-memory/render-sources/assets/animations/work/chibi/scene.js",
       "path": "assets/animations/work/chibi/scene.js",
       "group": "current",
       "notes": "2026-11-04按用户要求将待确认问号按可见轮廓高度对齐正比工作；在制作源完成后同步，保持原弹出与摇动。"
@@ -535,7 +535,7 @@
       "group": "current"
     },
     {
-      "source": "drawing-animation/scene.js",
+      "source": "software-preview/qa-memory/render-sources/assets/animations/drawing/normal/scene.js",
       "path": "assets/animations/drawing/normal/scene.js",
       "group": "current",
       "notes": "2026-11-04按用户要求将待确认问号按可见轮廓高度对齐正比工作；在制作源完成后同步，保持原弹出与摇动。"
@@ -777,7 +777,7 @@
       "group": "current"
     },
     {
-      "source": "standby-animation/redraw/face.js",
+      "source": "software-preview/qa-memory/standby-source/assets/animations/standby/chibi/face.js",
       "path": "assets/animations/standby/chibi/face.js",
       "group": "current"
     },
@@ -787,17 +787,17 @@
       "group": "current"
     },
     {
-      "source": "standby-animation/redraw/renderer.js",
+      "source": "software-preview/qa-memory/standby-source/assets/animations/standby/chibi/renderer.js",
       "path": "assets/animations/standby/chibi/renderer.js",
       "group": "current"
     },
     {
-      "source": "standby-animation/redraw/scene.js",
+      "source": "software-preview/qa-memory/standby-source/assets/animations/standby/chibi/scene.js",
       "path": "assets/animations/standby/chibi/scene.js",
       "group": "current"
     },
     {
-      "source": "standby-animation/redraw/sleeve.js",
+      "source": "software-preview/qa-memory/standby-source/assets/animations/standby/chibi/sleeve.js",
       "path": "assets/animations/standby/chibi/sleeve.js",
       "group": "current"
     },
@@ -812,7 +812,7 @@
       "group": "current"
     },
     {
-      "source": "standby-animation/redraw/wings.js",
+      "source": "software-preview/qa-memory/standby-source/assets/animations/standby/chibi/wings.js",
       "path": "assets/animations/standby/chibi/wings.js",
       "group": "current"
     },
@@ -859,7 +859,7 @@
       "notes": "用户原话：采纳60帧版本。5640源片；1112×834、290帧、60fps、约4.834秒透明VP9。文件不重编码，以1.5倍速播放约3.22秒。"
     },
     {
-      "source": "drag-animation/scene.mjs",
+      "source": "software-preview/qa-memory/render-sources/assets/animations/drag/chibi/scene.js",
       "path": "assets/animations/drag/chibi/scene.js",
       "group": "current",
       "notes": "2026-11-02用户要求真实桌面实现，沿用当前制作预览的拖拎和探头交互；按本次实施交付，不追记此前单独采纳。"
@@ -922,7 +922,7 @@
       "group": "current"
     },
     {
-      "source": "edge-animation/candidate.mjs",
+      "source": "software-preview/qa-memory/render-sources/assets/animations/peek/chibi/scene.js",
       "path": "assets/animations/peek/chibi/scene.js",
       "group": "current"
     },
@@ -984,6 +984,106 @@
     {
       "source": "edge-animation/layers/lash-left.png",
       "path": "assets/animations/peek/chibi/textures/lash-left.png",
+      "group": "current"
+    },
+    {
+      "path": "assets/shared/canvas-size.js",
+      "group": "current",
+      "source": "software-preview/qa-memory/render-sources/assets/shared/canvas-size.js"
+    },
+    {
+      "path": "assets/animations/standby/chibi/parts.js",
+      "group": "current",
+      "source": "software-preview/qa-memory/standby-source/assets/animations/standby/chibi/parts.js"
+    },
+    {
+      "source": "greeting-animation/assets/interaction/coffee-base.png",
+      "path": "assets/animations/coffee/chibi/textures/character.png",
+      "group": "current"
+    },
+    {
+      "source": "greeting-animation/assets/morning.png",
+      "path": "assets/animations/coffee/chibi/textures/original.png",
+      "group": "current"
+    },
+    {
+      "source": "greeting-animation/assets/interaction/coffee-front.png",
+      "path": "assets/animations/coffee/chibi/textures/foreground.png",
+      "group": "current"
+    },
+    {
+      "source": "greeting-animation/assets/interaction/wing-left.png",
+      "path": "assets/animations/coffee/chibi/textures/wing-left.png",
+      "group": "current"
+    },
+    {
+      "source": "greeting-animation/assets/interaction/wing-right.png",
+      "path": "assets/animations/coffee/chibi/textures/wing-right.png",
+      "group": "current"
+    },
+    {
+      "source": "greeting-animation/assets/interaction/coffee-face-plate.png",
+      "path": "assets/animations/coffee/chibi/textures/coffee-face-plate.png",
+      "group": "current"
+    },
+    {
+      "source": "greeting-animation/assets/interaction/coffee-open-mouth.png",
+      "path": "assets/animations/coffee/chibi/textures/coffee-open-mouth.png",
+      "group": "current"
+    },
+    {
+      "source": "greeting-animation/assets/interaction/coffee-closed-smile.png",
+      "path": "assets/animations/coffee/chibi/textures/coffee-closed-smile.png",
+      "group": "current"
+    },
+    {
+      "source": "greeting-animation/assets/goodnight.png",
+      "path": "assets/animations/goodnight/chibi/textures/character.png",
+      "group": "current"
+    },
+    {
+      "source": "greeting-animation/assets/sleep.png",
+      "path": "assets/animations/goodnight/chibi/textures/closed.png",
+      "group": "current"
+    },
+    {
+      "source": "greeting-animation/assets/interaction/night-face-plate.png",
+      "path": "assets/animations/goodnight/chibi/textures/night-face-plate.png",
+      "group": "current"
+    },
+    {
+      "source": "greeting-animation/delivery/assets/shared/greetings/scene.js",
+      "path": "assets/shared/greetings/scene.js",
+      "group": "current"
+    },
+    {
+      "source": "greeting-animation/delivery/assets/shared/greetings/controller.js",
+      "path": "assets/shared/greetings/controller.js",
+      "group": "current"
+    },
+    {
+      "source": "greeting-animation/delivery/assets/shared/greetings/motion.js",
+      "path": "assets/shared/greetings/motion.js",
+      "group": "current"
+    },
+    {
+      "source": "greeting-animation/delivery/assets/animations/goodnight/chibi/scene.js",
+      "path": "assets/animations/goodnight/chibi/scene.js",
+      "group": "current"
+    },
+    {
+      "source": "greeting-animation/delivery/assets/animations/goodnight/chibi/face.js",
+      "path": "assets/animations/goodnight/chibi/face.js",
+      "group": "current"
+    },
+    {
+      "source": "greeting-animation/delivery/assets/animations/coffee/chibi/scene.js",
+      "path": "assets/animations/coffee/chibi/scene.js",
+      "group": "current"
+    },
+    {
+      "source": "greeting-animation/delivery/assets/animations/coffee/chibi/face.js",
+      "path": "assets/animations/coffee/chibi/face.js",
       "group": "current"
     }
   ],

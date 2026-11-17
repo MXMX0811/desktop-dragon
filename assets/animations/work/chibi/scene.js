@@ -1,3 +1,4 @@
+import {canvasResolution,resizeSceneCanvas} from '../../../shared/canvas-size.js';
 import {createDrawingEyes} from '../../../shared/drawing-eyes.js';
 import {readingBodySlimPoint} from '../../../shared/chibi-seated-proportions.js';
 import {readingWings,readingWingPoint} from '../../../shared/chibi-seated-shapes.js';
@@ -13,7 +14,7 @@ const asset=file=>new URL(`./textures/${file}`,import.meta.url).href;
 const seatedAsset=file=>new URL(`../../../shared/textures/chibi-seated/${file}`,import.meta.url).href;
 const load=async src=>{const image=new Image();image.src=src;await image.decode();return image;};
 
-export async function createScene({PIXI:P,canvas}){
+export async function createScene({PIXI:P,canvas,size}){
  const layout=await fetch(new URL('./layout.json',import.meta.url)).then(response=>response.json());
  const names=['chair','chairFront','keyboard','screen','armLeft','armRight','headFront'];
  const [parts,bodyImage,tailImage,wingImages]=await Promise.all([
@@ -23,18 +24,18 @@ export async function createScene({PIXI:P,canvas}){
   Promise.all(['wing-left.png','wing-right.png'].map(file=>load(seatedAsset(file)))),
  ]);
  const app=new P.Application();
- await app.init({canvas,width:WIDTH,height:HEIGHT,resolution:1,antialias:true,backgroundAlpha:0,autoStart:false,sharedTicker:false,preference:'webgl'});
+ await app.init({canvas,width:WIDTH,height:HEIGHT,resolution:canvasResolution(size/REFERENCE_HEIGHT),antialias:true,backgroundAlpha:0,autoStart:false,sharedTicker:false,preference:'webgl'});
  const terminals=new globalThis.DragonWorkTerminals(P,[
   {x:-95,y:380,width:350,height:230,rotation:-.055},
   {x:995,y:350,width:350,height:230,rotation:.055},
  ]);
  terminals.container.position.set(OFFSET_X,OFFSET_Y);app.stage.addChild(terminals.container);
- const chair=new P.Sprite({texture:P.Texture.from(parts.chair)});
+ const chair=new P.Sprite({texture:P.Texture.from({resource:parts.chair,autoGenerateMipmaps:true})});
  chair.position.set(OFFSET_X+layout.parts.chair.x,OFFSET_Y+layout.parts.chair.y);app.stage.addChild(chair);
  const root=new P.Container({label:'seated-chair-laptop-character',eventMode:'none'});
  root.pivot.set(630,915);root.position.set(OFFSET_X+630,OFFSET_Y+915);app.stage.addChild(root);
  const mesh=(image,bounds,nx,ny)=>{
-  const part=new P.MeshPlane({texture:P.Texture.from(image),verticesX:nx,verticesY:ny});part.position.set(bounds.x,bounds.y);root.addChild(part);
+  const part=new P.MeshPlane({texture:P.Texture.from({resource:image,autoGenerateMipmaps:true}),verticesX:nx,verticesY:ny});part.position.set(bounds.x,bounds.y);root.addChild(part);
   const buffer=part.geometry.getAttribute('aPosition').buffer;
   return {part,bounds,buffer,rest:new Float32Array(buffer.data)};
  };
@@ -46,17 +47,17 @@ export async function createScene({PIXI:P,canvas}){
  const wings=readingWings.map((shape,i)=>({...mesh(wingImages[i],shape.bounds,33,25),shape}));
  // Same world transform as the rear chair, but drawn over the hanging rear hair.
  const chairFrontRoot=new P.Container();chairFrontRoot.pivot.set(630,915);chairFrontRoot.position.set(630,915);root.addChild(chairFrontRoot);
- const chairFront=new P.Sprite({texture:P.Texture.from(parts.chairFront)});chairFront.position.set(layout.parts.chairFront.x,layout.parts.chairFront.y);chairFrontRoot.addChild(chairFront);
+ const chairFront=new P.Sprite({texture:P.Texture.from({resource:parts.chairFront,autoGenerateMipmaps:true})});chairFront.position.set(layout.parts.chairFront.x,layout.parts.chairFront.y);chairFrontRoot.addChild(chairFront);
  const tail=mesh(tailImage,readingTail.bounds,readingTail.verticesX,readingTail.verticesY);
- const eyes=await createDrawingEyes(),eyeTexture=P.Texture.from(eyes.canvas),eyeSprite=new P.Sprite({texture:eyeTexture});
+ const eyes=await createDrawingEyes(),eyeTexture=P.Texture.from({resource:eyes.canvas,autoGenerateMipmaps:true}),eyeSprite=new P.Sprite({texture:eyeTexture});
  eyeSprite.position.set(eyes.bounds.x,eyes.bounds.y);root.addChild(eyeSprite);
  const lightCanvas=document.createElement('canvas');lightCanvas.width=390;lightCanvas.height=220;
  const paint=lightCanvas.getContext('2d'),glow=paint.createRadialGradient(195,145,10,195,145,170);
  glow.addColorStop(0,'rgba(177,211,255,.10)');glow.addColorStop(1,'rgba(177,211,255,0)');
  paint.fillStyle=glow;paint.beginPath();paint.ellipse(195,132,180,84,-.12,0,Math.PI*2);paint.fill();
- const light=new P.Sprite({texture:P.Texture.from(lightCanvas)});light.position.set(420,430);root.addChild(light);
+ const light=new P.Sprite({texture:P.Texture.from({resource:lightCanvas,autoGenerateMipmaps:true})});light.position.set(420,430);root.addChild(light);
  const sprite=name=>{
-  const part=new P.Sprite({texture:P.Texture.from(parts[name])});part.position.set(layout.parts[name].x,layout.parts[name].y);root.addChild(part);return part;
+  const part=new P.Sprite({texture:P.Texture.from({resource:parts[name],autoGenerateMipmaps:true})});part.position.set(layout.parts[name].x,layout.parts[name].y);root.addChild(part);return part;
  };
  sprite('keyboard');
  const arms=['armLeft','armRight'].map(name=>({...mesh(parts[name],layout.parts[name],35,35),rig:workChairArms[name]}));
@@ -79,7 +80,7 @@ export async function createScene({PIXI:P,canvas}){
    if(close!==lastBlink||frame.attention!==lastAttention){eyes.draw(close,frame.attention);eyeTexture.source.update();lastBlink=close;lastAttention=frame.attention;}
    light.alpha=frame.screenGlow;busy.render(frame);question.render(frame);app.renderer.render(app.stage);
   },
-  resize(size){canvas.style.width=`${WIDTH*size/REFERENCE_HEIGHT}px`;canvas.style.height=`${HEIGHT*size/REFERENCE_HEIGHT}px`;},
+  resize(size){resizeSceneCanvas(app,canvas,WIDTH,HEIGHT,size/REFERENCE_HEIGHT);},
   destroy(){terminals.destroy();app.destroy(false,{children:true,texture:true,textureSource:true});}
  };
 }

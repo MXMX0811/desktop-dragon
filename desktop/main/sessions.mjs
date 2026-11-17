@@ -1,7 +1,7 @@
-import {mkdir, readdir, readFile} from 'node:fs/promises';
+import {mkdir, readdir} from 'node:fs/promises';
 import {join} from 'node:path';
-import {dataDirectory, readEvents} from '../codex-hooks/store.mjs';
-import {reduceEvents} from '../codex-hooks/state.mjs';
+import {dataDirectory, readEventFiles} from '../codex-hooks/store.mjs';
+import {createEventReducer, reduceEvents} from '../codex-hooks/state.mjs';
 import {toolKind, kindScene} from '../codex-hooks/tool-kind.mjs';
 
 const ACTIVE = new Set(['activity_observed', 'tool_running', 'agent_running', 'permission_requested', 'compacting']);
@@ -20,7 +20,7 @@ function sessionView(session, history) {
   const active = !history && ACTIVE.has(state);
   return {
     session_id:session.session_id, state, history,
-    model:session.model, source:session.source,
+    model:session.model, source:session.source, transient_fork:session.transient_fork,
     last_event:session.last_event, last_received_at:session.last_received_at,
     current_turn_id:session.current_turn_id,
     active_tools:active ? session.active_tools : 0,
@@ -33,27 +33,40 @@ function sessionView(session, history) {
   };
 }
 
-export function projectSessions(historyEvents, observedEvents, observedSince, previousScene = 'standby', now = Date.now()) {
-  const sessions = new Map(reduceEvents(historyEvents).sessions.map(session =>
-    [session.session_id, sessionView(session, true)]));
+// Only the current pose and question context belong in a live session summary.
+// Completed turn/tool details remain available in the receiver's files.
+function observedView(session) {
+  const turn = session.turns.find(item => item.turn_id === session.current_turn_id);
+  const recentTool = (turn?.tools ?? []).filter(tool => tool.state === 'output_observed' && tool.started_at)
+    .sort((a, b) => String(b.output_observed_at).localeCompare(String(a.output_observed_at)))[0];
+  const pendingInputs = session.pending_inputs.map(input => {
+    const sourceTurn = session.turns.find(item => item.turn_id === input.turn_id);
+    const precedingTool = sourceTurn?.tools.filter(tool => tool.tool_name !== 'request_user_input_async'
+      && tool.started_at && tool.started_at <= input.requested_at)
+      .sort((a, b) => b.started_at.localeCompare(a.started_at))[0];
+    // A question keeps the task pose from when it was asked. Questions asked
+    // without a preceding tool use the general work confirmation animation.
+    return {...input, scene:precedingTool ? sceneFor(precedingTool) : 'work'};
+  });
+  return {session:sessionView(session, false), recentTool:ACTIVE.has(session.state) ? recentTool : undefined, pendingInputs};
+}
+
+function projectViews(history, observed, observedSince, previousScene = 'standby', now = Date.now()) {
+  const sessions = new Map(history.map(session => [session.session_id, session]));
   const recentTools = new Map(), pendingInputs = [];
-  for (const session of reduceEvents(observedEvents).sessions) {
-    sessions.set(session.session_id, sessionView(session, false));
-    const turn = session.turns.find(item => item.turn_id === session.current_turn_id);
-    const completed = (turn?.tools ?? []).filter(tool => tool.state === 'output_observed' && tool.started_at)
-      .sort((a, b) => String(b.output_observed_at).localeCompare(String(a.output_observed_at)))[0];
-    if (completed) recentTools.set(session.session_id, completed);
-    for (const input of session.pending_inputs) {
-      const sourceTurn = session.turns.find(item => item.turn_id === input.turn_id);
-      const precedingTool = sourceTurn?.tools.filter(tool => tool.tool_name !== 'request_user_input_async'
-        && tool.started_at && tool.started_at <= input.requested_at)
-        .sort((a, b) => b.started_at.localeCompare(a.started_at))[0];
-      // A question keeps the task pose from when it was asked. Questions asked
-      // without a preceding tool use the general work confirmation animation.
-      pendingInputs.push({...input, scene:precedingTool ? sceneFor(precedingTool) : 'work'});
-    }
+  for (const view of observed) {
+    // Session identity survives the observation boundary; old activity does not.
+    const session = {...view.session,
+      transient_fork:view.session.transient_fork ?? sessions.get(view.session.session_id)?.transient_fork};
+    sessions.set(session.session_id, session);
+    if (session.transient_fork) continue;
+    if (view.recentTool) recentTools.set(view.session.session_id, view.recentTool);
+    pendingInputs.push(...view.pendingInputs);
   }
-  const list = [...sessions.values()].sort((a, b) => String(b.last_received_at).localeCompare(String(a.last_received_at)));
+  // Composer predictions use non-persistent forks and emit ordinary prompt
+  // hooks. They are outside the displayed conversation/task inventory.
+  const list = [...sessions.values()].filter(session => !session.transient_fork)
+    .sort((a, b) => String(b.last_received_at).localeCompare(String(a.last_received_at)));
   const active = list.filter(session => !session.history && ACTIVE.has(session.state));
   const tools = active.flatMap(session => session.tools);
   const sceneCounts = {reading:0, work:0, thinking:0};
@@ -88,22 +101,90 @@ export function projectSessions(historyEvents, observedEvents, observedSince, pr
   };
 }
 
+export function projectSessions(historyEvents, observedEvents, observedSince, previousScene = 'standby', now = Date.now()) {
+  return projectViews(reduceEvents(historyEvents).sessions.map(session => sessionView(session, true)),
+    reduceEvents(observedEvents).sessions.map(observedView), observedSince, previousScene, now);
+}
+
+const compareFiles = (a, b) => a.received_at.localeCompare(b.received_at) || a.order - b.order;
+
 /** Read the existing receiver's atomic metadata files; never write to Codex. */
 export async function createSessionObserver(onSnapshot, {directory = dataDirectory, enabled = true} = {}) {
   const observedSince = enabled ? new Date().toISOString() : null;
   const folder = join(directory, 'events');
   await mkdir(folder, {recursive:true, mode:0o700});
-  const seen = new Set(), observed = [];
-  let history = [], current, closed = false, scanning = null, holdTimer;
+  const seen = new Set(), sessions = new Map(), dirty = new Set();
+  let current, closed = false, scanning = null, holdTimer;
+  let lastReceivedAt = null, lastObservedAt = null, receivedCount = 0;
+
+  // The index contains only file names/order. It lets a reopened session or a
+  // delayed atomic write be rebuilt in timestamp order without retaining events.
+  async function collect(names) {
+    for await (const {name, event} of readEventFiles(names, directory)) {
+      const order = seen.size;
+      seen.add(name);
+      const observed = enabled && event.received_at >= observedSince;
+      if (!lastReceivedAt || event.received_at > lastReceivedAt) lastReceivedAt = event.received_at;
+      if (observed) {
+        receivedCount++;
+        if (!lastObservedAt || event.received_at > lastObservedAt) lastObservedAt = event.received_at;
+      }
+      if (!event.session_id || !event.hook_event_name) continue;
+      let entry = sessions.get(event.session_id);
+      if (!entry) {
+        entry = {history:[], observed:[], historyDirty:false, applied:0, reducer:null};
+        sessions.set(event.session_id, entry);
+      }
+      const file = {name, received_at:String(event.received_at ?? ''), order};
+      entry[observed ? 'observed' : 'history'].push(file);
+      if (!observed) entry.historyDirty = true;
+      dirty.add(entry);
+    }
+  }
+
+  async function applyFiles(reducer, files) {
+    for await (const {event} of readEventFiles(files.map(file => file.name), directory)) reducer.apply(event);
+    return reducer.snapshot().sessions[0];
+  }
+
+  async function update() {
+    for (const entry of dirty) {
+      if (entry.historyDirty) {
+        const files = [...entry.history].sort(compareFiles);
+        entry.historyView = sessionView(await applyFiles(createEventReducer(), files), true);
+        entry.historyFirst = files[0];
+        entry.historyDirty = false;
+      }
+      if (entry.applied < entry.observed.length) {
+        const added = entry.observed.slice(entry.applied).sort(compareFiles);
+        // A newly visible file may have been written before an already applied
+        // event. Rebuild this session only, preserving the original ordering.
+        const rebuild = !entry.reducer || compareFiles(added[0], entry.lastApplied) < 0;
+        const reducer = rebuild ? createEventReducer() : entry.reducer;
+        const files = rebuild ? [...entry.observed].sort(compareFiles) : added;
+        const session = await applyFiles(reducer, files);
+        entry.observedView = observedView(session);
+        entry.observedFirst = rebuild ? files[0] : entry.observedFirst;
+        entry.lastApplied = files.at(-1);
+        entry.applied = entry.observed.length;
+        // Stop/Interrupt can leave unanswered questions. Their exact IDs/counts
+        // and pose remain in observedView; only finished execution detail is freed.
+        entry.reducer = ACTIVE.has(session.state) ? reducer : null;
+      }
+      dirty.delete(entry);
+    }
+  }
+
   const publish = error => {
     if (closed) return;
     clearTimeout(holdTimer);
-    current = projectSessions(history, observed, observedSince, current?.activity.scene);
-    const latest = events => events.reduce((at, event) => !at || event.received_at > at ? event.received_at : at, null);
-    current.connection = {
-      enabled, observedSince, lastReceivedAt:latest([...history, ...observed]),
-      lastObservedAt:latest(observed), receivedCount:observed.length,
-    };
+    const entries = [...sessions.values()];
+    const history = entries.filter(entry => entry.historyView)
+      .sort((a, b) => compareFiles(a.historyFirst, b.historyFirst)).map(entry => entry.historyView);
+    const observed = entries.filter(entry => entry.observedView)
+      .sort((a, b) => compareFiles(a.observedFirst, b.observedFirst)).map(entry => entry.observedView);
+    current = projectViews(history, observed, observedSince, current?.activity.scene);
+    current.connection = {enabled, observedSince, lastReceivedAt, lastObservedAt, receivedCount};
     if (error) {
       current.error = error.message;
       current.activity.suspended = current.activity.scene !== 'standby';
@@ -124,26 +205,28 @@ export async function createSessionObserver(onSnapshot, {directory = dataDirecto
     scanning = (async () => {
       try {
         const names = (await readdir(folder)).filter(name => name.endsWith('.json') && !seen.has(name));
-        if (!names.length) return;
-        const events = await Promise.all(names.map(name => readFile(join(folder, name), 'utf8').then(JSON.parse)));
-        names.forEach(name => seen.add(name));
-        for (const event of events) (event.received_at >= observedSince ? observed : history).push(event);
+        if (!names.length && !dirty.size) return;
+        await collect(names);
+        await update();
         publish();
       } catch (error) { publish(error); }
     })().finally(() => { scanning = null; });
     return scanning;
   }
-  const events = await readEvents(directory);
-  for (const event of events) {
-    seen.add(`${event.event_id}.json`);
-    (enabled && event.received_at >= observedSince ? observed : history).push(event);
-  }
+  await collect((await readdir(folder)).filter(name => name.endsWith('.json')));
+  await update();
   publish();
   // Only new metadata files are read. With no new events, publish once when the
   // short tool pose expires; do not publish unchanged snapshots on every scan.
   const timer = enabled ? setInterval(() => void scan(), 1000) : null;
   return {
     snapshot:() => current,
+    retainedCounts:() => {
+      const live = [...sessions.values()].flatMap(entry => entry.reducer ? [entry.reducer.retainedCounts()] : []);
+      return {events:0, indexedFiles:seen.size, sessions:sessions.size, liveSessions:live.length,
+        turns:live.reduce((sum, counts) => sum + counts.turns, 0),
+        tools:live.reduce((sum, counts) => sum + counts.tools, 0)};
+    },
     close() { closed = true; clearInterval(timer); clearTimeout(holdTimer); },
   };
 }

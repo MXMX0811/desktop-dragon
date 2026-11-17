@@ -1,3 +1,4 @@
+import {canvasResolution,resizeSceneCanvas} from '../../../shared/canvas-size.js';
 import {createDrawingSheet} from '../../../shared/drawing-effects.js';
 import {createDrawingEyes} from '../../../shared/drawing-eyes.js';
 import {readingTail,readingTailPoint} from '../../../shared/attention-tail-rig.js';
@@ -7,20 +8,20 @@ import {createQuestionBubble} from '../../../shared/question-bubble.js';
 import {drawingSize,drawingStroke,drawingArmPoint,floatingSheet,drawingTablePoint} from '../../../shared/drawing-motion.js';
 const image=async(scene,name)=>{const img=new Image();img.src=new URL(`${scene}/${name}`,import.meta.url).href;await img.decode();return img;};
 
-export async function createScene({PIXI:P,canvas}){
+export async function createScene({PIXI:P,canvas,size}){
  const {width,height,offsetX:ox,offsetY:oy}=drawingSize;
- const app=new P.Application();await app.init({canvas,width,height,resolution:1,antialias:true,backgroundAlpha:0,autoStart:false,sharedTicker:false,preference:'webgl'});
+ const app=new P.Application();await app.init({canvas,width,height,resolution:canvasResolution(size/1200),antialias:true,backgroundAlpha:0,autoStart:false,sharedTicker:false,preference:'webgl'});
  const effects=new P.Container();app.stage.addChild(effects);
  const sheets=Array.from({length:6},(_,i)=>{const item=createDrawingSheet(P,i%3);effects.addChild(item);return item;});
  const root=new P.Container();root.pivot.set(630,915);root.position.set(ox+630,oy+915);app.stage.addChild(root);
- const sprite=async(parent,folder,file,x=0,y=0)=>{const s=new P.Sprite({texture:P.Texture.from(await image(folder,file))});s.position.set(x,y);parent.addChild(s);return s;};
- const mesh=async(parent,folder,file,bounds,nx=41,ny=41)=>{const m=new P.MeshPlane({texture:P.Texture.from(await image(folder,file)),verticesX:nx,verticesY:ny});m.position.set(bounds.x,bounds.y);parent.addChild(m);const buffer=m.geometry.getAttribute('aPosition').buffer;return {m,buffer,rest:new Float32Array(buffer.data),bounds};};
+ const sprite=async(parent,folder,file,x=0,y=0)=>{const s=new P.Sprite({texture:P.Texture.from({resource:await image(folder,file),autoGenerateMipmaps:true})});s.position.set(x,y);parent.addChild(s);return s;};
+ const mesh=async(parent,folder,file,bounds,nx=41,ny=41)=>{const m=new P.MeshPlane({texture:P.Texture.from({resource:await image(folder,file),autoGenerateMipmaps:true}),verticesX:nx,verticesY:ny});m.position.set(bounds.x,bounds.y);parent.addChild(m);const buffer=m.geometry.getAttribute('aPosition').buffer;return {m,buffer,rest:new Float32Array(buffer.data),bounds};};
  const body=await mesh(root,'../../../shared/textures/chibi-seated','body-tail-separated.png',{x:0,y:0},97,97);
  for(let i=0;i<body.rest.length;i+=2){const p=readingBodySlimPoint(body.rest[i],body.rest[i+1]);body.buffer.data[i]=p[0];body.buffer.data[i+1]=p[1];}body.buffer.update();
  const tail=await mesh(root,'../../../shared/textures/chibi-seated','tail.png',readingTail.bounds,49,43);
  const wings=await Promise.all(readingWings.map((shape,i)=>mesh(root,'../../../shared/textures/chibi-seated',`wing-${i?'right':'left'}.png`,shape.bounds,33,25)));
  await sprite(root,'./textures','bodice.png',530,618);
- const blink=await createDrawingEyes(),eyeTexture=P.Texture.from(blink.canvas),eyes=new P.Sprite({texture:eyeTexture});eyes.position.set(blink.bounds.x,blink.bounds.y);root.addChild(eyes);
+ const blink=await createDrawingEyes(),eyeTexture=P.Texture.from({resource:blink.canvas,autoGenerateMipmaps:true}),eyes=new P.Sprite({texture:eyeTexture});eyes.position.set(blink.bounds.x,blink.bounds.y);root.addChild(eyes);
  // The table has its own fixed transform. Breathing cannot lift the tabletop
  // or slide the resting hand off the sheet.
  const foreground=new P.Container();foreground.position.set(ox,oy);app.stage.addChild(foreground);
@@ -49,7 +50,7 @@ export async function createScene({PIXI:P,canvas}){
    sheets.forEach((g,i)=>{const pose=floatingSheet(frame.time,i);g.position.set(pose.x,pose.y);g.scale.set(pose.scale);g.rotation=pose.angle;g.alpha=pose.alpha;});
    question.render(frame);app.renderer.render(app.stage);
   },
-  resize(size){const s=size/1200;canvas.style.width=`${width*s}px`;canvas.style.height=`${height*s}px`;},
+  resize(size){resizeSceneCanvas(app,canvas,width,height,size/1200);},
   destroy(){app.destroy(false,{children:true,texture:true,textureSource:true});}
  };
 }

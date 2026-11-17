@@ -27,8 +27,14 @@ jobs:
           ELECTRON_SKIP_BINARY_DOWNLOAD: '1'
       - run: npm test
       - run: npm run package
-      - name: Archive macOS app
-        run: ditto -c -k --keepParent "out/Desktop Dragon-darwin-arm64/Desktop Dragon.app" "out/desktop-dragon-${VERSION}-macos-arm64.zip"
+      - name: Create macOS DMG
+        run: |
+          dmg_stage="$(mktemp -d)"
+          trap 'rm -rf "$dmg_stage"' EXIT
+          ditto "out/Desktop Dragon-darwin-arm64/Desktop Dragon.app" "$dmg_stage/Desktop Dragon.app"
+          ln -s /Applications "$dmg_stage/Applications"
+          hdiutil create -volname "Desktop Dragon" -srcfolder "$dmg_stage" \
+            -fs HFS+ -format UDZO "out/desktop-dragon-${VERSION}-macos-arm64.dmg"
       - name: Publish release
         env:
           GH_TOKEN: ${{ github.token }}
@@ -37,7 +43,7 @@ jobs:
           if [[ "$VERSION" == *-* ]]; then
             release_flags+=(--prerelease --latest=false)
           fi
-          gh release create "$GITHUB_REF_NAME" "out/desktop-dragon-${VERSION}-macos-arm64.zip" \
+          gh release create "$GITHUB_REF_NAME" "out/desktop-dragon-${VERSION}-macos-arm64.dmg" \
             --draft --verify-tag --title "Desktop Dragon $VERSION" \
             --notes-file "docs/releases/${VERSION}.md" "${release_flags[@]}"
           gh release edit "$GITHUB_REF_NAME" --draft=false "${release_flags[@]}"

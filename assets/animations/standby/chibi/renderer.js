@@ -1,3 +1,4 @@
+import {releasePart} from './parts.js';
 import {forearmPose} from './motion.js';
 import {drawFace, makeLashes} from './face.js';
 import {drawSleeve, makeSleeveTexture, makeOrnament, drawOrnament} from './sleeve.js';
@@ -59,4 +60,10 @@ export function drawPet(ctx, art, pose) {
     ctx.fillText('z', 990 + u * 90, 390 - u * 170);
   }
   ctx.restore();
+}
+
+export function releaseArt(art) {
+  art.underlay.width = art.underlay.height = 0;
+  for (const part of [art.shoulder, art.sleeve, art.ornament,
+    ...art.lashes.open, ...art.lashes.closed, ...art.wingLayers.wings.map(wing => wing.texture)]) releasePart(part);
 }

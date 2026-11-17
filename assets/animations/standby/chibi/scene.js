@@ -1,4 +1,4 @@
-import {loadArt, drawPet} from './renderer.js';
+import {loadArt, drawPet, releaseArt} from './renderer.js';
 
 // The shared scene renders the adopted wake gesture and its two resting
 // poses. Its caller owns the clock, events, and pause/visibility lifecycle.
@@ -20,6 +20,7 @@ export async function createScene({canvas}) {
     },
     render(pose) { drawPet(context, art, pose); },
     destroy() {
+      releaseArt(art);
       art = null;
       canvas.width = canvas.height = 0;
     },

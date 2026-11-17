@@ -7,9 +7,9 @@ export function animationKey(view){return `${view.form}:${view.scene}`;}
 export function needsTransformation(before,after){return !!before&&before.form!==after.form;}
 
 export class PetPresenter {
- constructor(stage,cloud,{onChange=()=>{},onError=()=>{},positionEntry=()=>{}}={}){
+ constructor(stage,cloud,{onChange=()=>{},onError=()=>{},positionEntry=()=>{},onComplete=()=>{},onSettled=()=>{}}={}){
   this.stage=stage;this.cloud=new TransformationCloud(cloud);this.fade=new SceneFade();this.outgoing=null;
-  this.onChange=onChange;this.onError=onError;this.positionEntry=positionEntry;this.current=null;this.desired=null;
+  this.onChange=onChange;this.onError=onError;this.onComplete=onComplete;this.onSettled=onSettled;this.positionEntry=positionEntry;this.current=null;this.desired=null;
   this.idleWaiters=[];this.busy=false;this.destroyed=false;this.hidden=document.hidden;this.failedKey=null;
  }
  update(view){
@@ -26,12 +26,15 @@ export class PetPresenter {
   const element=document.createElement('div');element.className='character';
   element.style.visibility='hidden';this.stage.append(element);
   try{
-   const animation=await createAnimation(view.scene,view.form,element,{size:displaySize(view.scene,view.form)});
+   const animation=await createAnimation(view.scene,view.form,element,{size:displaySize(view.scene,view.form),onComplete:()=>{
+    if(this.current===entry&&this.desired?.scene===entry.view.scene)this.onComplete(entry.view);
+   }});
    animation.setVisible(false);
    const entry={element,animation,key:animationKey(view),view};this.positionEntry(entry);this.apply(entry,view);return entry;
   }catch(error){element.remove();throw error;}
  }
  release(entry){if(entry){entry.animation.destroy();entry.element.remove();}}
+ releaseCurrent(){this.release(this.current);this.current=null;}
  install(entry,retainPrevious=false){
   // prepare() already sized and painted the canvas; resizing here clears the
   // first visible frame immediately before the crossfade.
@@ -73,7 +76,7 @@ export class PetPresenter {
    }
    if(this.current&&!this.destroyed)this.apply(this.current,this.desired);
   }catch(error){this.failedKey=attemptKey;this.release(next);if(covered)this.cloud.destroy();if(attemptKey===animationKey(this.desired))this.onError(error);}
-  finally{this.release(this.outgoing);this.outgoing=null;this.busy=false;for(const resolve of this.idleWaiters.splice(0))resolve();}
+  finally{this.release(this.outgoing);this.outgoing=null;this.busy=false;for(const resolve of this.idleWaiters.splice(0))resolve();if(!this.destroyed)this.onSettled();}
  }
  touch(){return this.current?.animation.touch();}
  setVisible(visible){this.hidden=!visible;this.current?.animation.setVisible(visible);this.outgoing?.animation.setVisible(visible);}

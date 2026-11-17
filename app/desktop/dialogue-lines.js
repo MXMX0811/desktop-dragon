@@ -1,5 +1,7 @@
 // User-provided character dialogue; these lines are not session facts.
 export const DIALOGUES={
+ coffee:['给你一杯咖啡～','嘿嘿，今天也一起加油吧！'],
+ goodnight:['晚安，记得好好休息哦～','枕头软软的……有点困啦。'],
  standby:['诶？主人在叫我吗？','嘿嘿，我在这里哦～'],
  sleep:['呼噜……再睡五分钟……'],
  thinking:['唔……让我想想……','好像有点头绪了！','脑袋正在转圈圈……'],

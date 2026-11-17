@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {reduceEvents} from './state.mjs';
+import {createEventReducer, reduceEvents} from './state.mjs';
 
 const event = (name, n, extra={}) => ({hook_event_name:name, event_id:`e${n}`,
   received_at:`2026-11-01T00:00:${String(n).padStart(2,'0')}.000Z`,
@@ -216,6 +216,17 @@ test('SessionEnd closes all turns; a later new prompt can start a new turn', () 
   assert.equal(reduceEvents(events).sessions[0].state,'activity_observed');
 });
 
+test('non-persistent fork identity is recorded without discarding hook facts', () => {
+  const events=[event('SessionStart',1,{turn_id:undefined,source:'fork',has_transcript_path:false}),
+    event('UserPromptSubmit',2)];
+  const output=reduceEvents(events);
+  assert.equal(output.sessions[0].transient_fork,true);
+  assert.equal(output.sessions[0].state,'activity_observed');
+  assert.equal(output.sessions[0].turns.length,1);
+  assert.equal(reduceEvents([...events,event('Interrupt',3),
+    event('SessionEnd',4,{turn_id:undefined})]).sessions[0].transient_fork,true);
+});
+
 test('missing call identities remain unpaired; metadata output cannot leak input bodies', () => {
   const output = reduceEvents([
     event('PreToolUse',1,{tool_name:'Bash',tool_input:{command:'SECRET'},transcript_path:'/secret'}),
@@ -398,4 +409,41 @@ test('SessionEnd discards pending questions and late outputs cannot reopen them'
   ];
   assert.equal(reduceEvents(events).sessions[0].pending_input_count,0);
   assert.equal(reduceEvents(events).sessions[0].state,'activity_observed');
+});
+
+
+test('incremental application matches ordered batch reduction and does not mutate earlier snapshots', () => {
+  const child = {turn_id:'child-turn', agent_id:'child'};
+  const events = [event('SessionStart',1,{turn_id:undefined}), event('UserPromptSubmit',2),
+    event('PreToolUse',3,{tool_use_id:'read',tool_name:'Read',tool_kind:'read'}),
+    questionEvent('PreToolUse',4,{input_question_count:2}),
+    questionEvent('PostToolUse',5,{input_question_count:2,input_request_accepted:true}),
+    event('SubagentStart',6,child), event('PreToolUse',7,{...child,tool_use_id:'child-read'}),
+    event('PermissionRequest',8), event('Stop',9),
+    event('UserPromptSubmit',10,{turn_id:'next',input_replies:[{tool_use_id:'question-a',question_index:0}]}),
+    event('Interrupt',11,{turn_id:'next'}), event('SubagentStop',12,child),
+    event('UserPromptSubmit',13,{turn_id:'last',input_replies:[{tool_use_id:'question-a',question_index:1}]}),
+    event('PreCompact',14,{turn_id:undefined}), event('SessionEnd',15,{turn_id:undefined})];
+  const reducer = createEventReducer(), snapshots = [];
+  for (let index=0;index<events.length;index++) {
+    reducer.apply(events[index]);
+    const snapshot = reducer.snapshot();
+    assert.deepEqual(snapshot, reduceEvents(events.slice(0,index+1)));
+    snapshots.push({snapshot, saved:structuredClone(snapshot)});
+  }
+  for (const {snapshot, saved} of snapshots) assert.deepEqual(snapshot,saved);
+});
+
+test('a long incremental stream retains derived call identities without retaining original metadata', () => {
+  const reducer = createEventReducer();
+  reducer.apply(event('UserPromptSubmit',0));
+  for (let index=0;index<2000;index++) {
+    const call = {tool_use_id:`call-${index}`,tool_name:'Read',unused_metadata:'x'.repeat(1000)};
+    reducer.apply(event('PreToolUse',index*2+1,call));
+    reducer.apply(event('PostToolUse',index*2+2,call));
+  }
+  const counts = reducer.retainedCounts();
+  assert.deepEqual(counts,{events:0,eventIds:4001,sessions:1,turns:1,tools:2000});
+  assert.equal(reducer.snapshot().sessions[0].active_tools,0);
+  assert.ok(!JSON.stringify(reducer.snapshot()).includes('unused_metadata'));
 });

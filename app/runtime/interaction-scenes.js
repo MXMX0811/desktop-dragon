@@ -11,6 +11,8 @@ const DRAG_SIZE=displaySize('drag','chibi'),DRAG_EYES=[475,562];
 export const DRAG_EDGE_WIDTH=80;
 // Eye anchors are measured in each actual padded canvas, never alpha bounds.
 const eyes={
+ 'coffee:chibi':[754.2,800.8,1500,1800],
+ 'goodnight:chibi':[750,1019.8,1500,1800],
  'standby:chibi':[695.5,635.5,1414,1414],
  'thinking:chibi':[598,595,1184,1696],
  'reading:chibi':[670,590,1374,1374],
@@ -29,7 +31,7 @@ export function taskEye(view,element,stage){
 export async function createDrag(element){
  const canvas=document.createElement('canvas');canvas.dataset.petHit='';canvas.setAttribute('aria-label','可拖动的龙娘');canvas.setAttribute('role','img');
  element.append(canvas);applyReferenceColor(canvas,'drag-chibi');
- const scene=await createDragScene({PIXI:globalThis.PIXI,canvas}),controller=new DragController();
+ const scene=await createDragScene({PIXI:globalThis.PIXI,canvas,size:DRAG_SIZE}),controller=new DragController();
  scene.resize(DRAG_SIZE);const scale=DRAG_SIZE/REFERENCE_HEIGHT;
  Object.assign(element.style,{width:`${CANVAS.width*scale}px`,height:`${CANVAS.height*scale}px`});
  let origin={x:0,y:0};
@@ -50,7 +52,7 @@ export async function createFlight(element,onEnded){
 }
 export async function createPeek(element){
  const canvas=document.createElement('canvas');element.append(canvas);
- const scene=await createEdgeScene({canvas,PIXI:globalThis.PIXI});let bounds;
+ const scene=await createEdgeScene({canvas,PIXI:globalThis.PIXI,size:displaySize('peek','chibi')});let bounds;
  return {
   place(options){
    bounds=scene.layout({size:displaySize('peek','chibi'),...options});

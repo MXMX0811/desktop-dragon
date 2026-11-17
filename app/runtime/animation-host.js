@@ -1,8 +1,8 @@
 import {ChibiSceneController} from '../../assets/shared/chibi-controller.js';
 import {applyReferenceColor} from '../../assets/shared/reference-palette.mjs';
 
-const labels={standby:'陪伴龙娘',reading:'阅读龙娘',work:'工作龙娘',thinking:'思考龙娘',drawing:'绘图龙娘'};
-const supported=new Set(['standby:chibi','reading:chibi','work:chibi','thinking:chibi','drawing:chibi','reading:normal','work:normal','drawing:normal']);
+const labels={coffee:'递咖啡的龙娘',goodnight:'抱枕晚安的龙娘',standby:'陪伴龙娘',reading:'阅读龙娘',work:'工作龙娘',thinking:'思考龙娘',drawing:'绘图龙娘'};
+const supported=new Set(['coffee:chibi','goodnight:chibi','standby:chibi','reading:chibi','work:chibi','thinking:chibi','drawing:chibi','reading:normal','work:normal','drawing:normal']);
 
 async function loadImages(module,base){
  return Object.fromEntries(await Promise.all(Object.entries(module.assetPaths).map(async([key,path])=>{
@@ -13,8 +13,8 @@ async function loadImages(module,base){
 // Owns only animation time and resources. Session facts and form transitions live
 // in the runtime above this host; no pointer action approves a client request.
 export class AnimationHost{
- constructor({kind,form,canvas,controller,scene,container,size=320}){
-  Object.assign(this,{kind,form,canvas,controller,scene,container});
+ constructor({kind,form,canvas,controller,scene,container,size=320,onComplete=()=>{}}){
+  Object.assign(this,{kind,form,canvas,controller,scene,container,onComplete});this.completed=false;
   this.visible=true;this.suspended=false;this.destroyed=false;this.raf=0;this.last=null;this.feedback=null;
   canvas.style.transformOrigin='50% 90%';
   this.ready=Promise.resolve();
@@ -25,7 +25,9 @@ export class AnimationHost{
     let elapsed=Math.min(.1,Math.max(0,(now-this.last)/1000));
     while(elapsed>0){const step=Math.min(elapsed,1/60);this.controller.update(step);elapsed-=step;}
    }
-   this.last=now;this.render();this.raf=requestAnimationFrame(this.tick);
+   this.last=now;this.render();
+   if(this.controller.finished&&!this.completed){this.completed=true;this.onComplete();}
+   this.raf=requestAnimationFrame(this.tick);
   };
   this.onVisibility=()=>{if(document.hidden)this.cancelFeedback();this.schedule();};
   document.addEventListener('visibilitychange',this.onVisibility);
@@ -84,15 +86,21 @@ export class AnimationHost{
  }
 }
 
-export async function createAnimation(kind,form,container,{size=320}={}){
+export async function createAnimation(kind,form,container,{size=320,onComplete=()=>{}}={}){
  if(!supported.has(`${kind}:${form}`))throw new Error(`Unsupported animation: ${kind}/${form}`);
  const canvas=document.createElement('canvas');canvas.style.display='block';
- applyReferenceColor(canvas,`${kind}-${form}`);
+ if(!['coffee','goodnight'].includes(kind))applyReferenceColor(canvas,`${kind}-${form}`); // Greeting artwork is already colour-aligned.
  canvas.setAttribute('role','img');canvas.setAttribute('aria-label',labels[kind]);
  container.append(canvas);
  let controller,scene;
  try{
-  if(kind==='standby'){
+  if(kind==='coffee'||kind==='goodnight'){
+   const [{GreetingController},module]=await Promise.all([
+    import('../../assets/shared/greetings/controller.js'),
+    import(`../../assets/animations/${kind}/chibi/scene.js`),
+   ]);
+   controller=new GreetingController(kind);scene=await module.createScene({canvas,size});
+  }else if(kind==='standby'){
    const [{WakeController},module]=await Promise.all([
     import('../../assets/animations/standby/chibi/controller.js'),
     import('../../assets/animations/standby/chibi/scene.js'),
@@ -102,17 +110,17 @@ export async function createAnimation(kind,form,container,{size=320}={}){
   }else if(form==='chibi'){
    const module=await import(`../../assets/animations/${kind}/chibi/scene.js`);
    controller=new ChibiSceneController(kind);
-   scene=await module.createScene({PIXI:globalThis.PIXI,canvas});
+   scene=await module.createScene({PIXI:globalThis.PIXI,canvas,size});
   }else if(kind==='drawing'){
    const module=await import('../../assets/animations/drawing/normal/scene.js');
    controller=new ChibiSceneController('drawing');
-   scene=await module.createScene({PIXI:globalThis.PIXI,canvas});
+   scene=await module.createScene({PIXI:globalThis.PIXI,canvas,size});
   }else{
    const url=new URL(`../../assets/animations/${kind}/normal/scene.js`,import.meta.url);
    const module=await import(url.href),images=await loadImages(module,url);
    controller=new module.Controller();scene=await module.createScene({PIXI:globalThis.PIXI,canvas,images});
   }
-  return new AnimationHost({kind,form,container,canvas,controller,scene,size});
+  return new AnimationHost({kind,form,container,canvas,controller,scene,size,onComplete});
  }catch(error){
   if(scene)scene.destroy();canvas.remove();throw error;
  }

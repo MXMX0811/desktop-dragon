@@ -8,18 +8,18 @@
 
 ## 状态预览
 
-以下 GIF 展示内置动作。绘图可通过右键菜单展示；收到已接入的 Codex 异步提问时，自动进入待确认。
+以下 GIF 展示内置动作；阅读、工作和绘图预览同时展示子代理小云同步环绕的效果。绘图可通过右键菜单展示；收到已接入的 Codex 异步提问时，自动进入待确认。
 
 <table>
   <tr>
     <td><strong>Q 版 · 陪伴、休眠与唤醒</strong><br><img src="docs/previews/standby.gif" width="240" height="240" alt="龙娘从休眠中醒来，掩嘴打哈欠并振翅"></td>
-    <td><strong>Q 版 · 阅读</strong><br><img src="docs/previews/reading-chibi.gif" width="240" height="240" alt="龙娘坐在书堆上阅读，书页连续翻动"></td>
-    <td><strong>Q 版 · 工作</strong><br><img src="docs/previews/work-chibi.gif" width="240" height="240" alt="龙娘坐在电脑椅上敲击笔记本键盘，并抬眼回应点击"></td>
+    <td><strong>Q 版 · 阅读</strong><br><img src="docs/previews/reading-chibi.gif" width="240" height="240" alt="龙娘坐在书堆上连续翻页，两朵子代理小云同步环绕"></td>
+    <td><strong>Q 版 · 工作</strong><br><img src="docs/previews/work-chibi.gif" width="240" height="240" alt="龙娘坐在电脑椅上敲击笔记本键盘并抬眼回应，两朵子代理小云同步环绕"></td>
   </tr>
   <tr>
-    <td><strong>Q 版 · 绘图</strong><br><img src="docs/previews/drawing-chibi.gif" width="240" height="240" alt="龙娘执笔绘图，身后浮现蓝图和涂鸦"></td>
-    <td><strong>正比 · 阅读与待确认</strong><br><img src="docs/previews/reading-normal.gif" width="240" height="240" alt="龙娘从阅读举书看向用户，问号出现，随后放下书继续阅读"></td>
-    <td><strong>正比 · 工作与待确认</strong><br><img src="docs/previews/work-normal.gif" width="240" height="240" alt="龙娘停止敲键，摘下眼镜并托腮等待，随后戴回眼镜继续工作"></td>
+    <td><strong>Q 版 · 绘图</strong><br><img src="docs/previews/drawing-chibi.gif" width="240" height="240" alt="龙娘执笔绘图，身后浮现蓝图和涂鸦，两朵子代理小云同步环绕"></td>
+    <td><strong>正比 · 阅读与待确认</strong><br><img src="docs/previews/reading-normal.gif" width="240" height="240" alt="龙娘举书等待确认后继续阅读，两朵子代理小云同步环绕"></td>
+    <td><strong>正比 · 工作与待确认</strong><br><img src="docs/previews/work-normal.gif" width="240" height="240" alt="龙娘摘眼镜托腮等待确认后继续工作，两朵子代理小云同步环绕"></td>
   </tr>
 </table>
 
@@ -27,13 +27,13 @@
 
 ### macOS Apple Silicon
 
-发布版本为 `0.1.0-alpha.2`，提供适用于 Apple Silicon（M 系列芯片）Mac 的 ZIP。应用包声明的最低系统版本为 macOS 13。
+发布版本为 `0.1.0-alpha.3`，提供适用于 Apple Silicon（M 系列芯片）Mac 的 DMG。应用包声明的最低系统版本为 macOS 13。
 
-1. 从 [Release](https://github.com/MXMX0811/desktop-dragon/releases/tag/v0.1.0-alpha.2) 下载 macOS arm64 ZIP 并解压。
-2. 将 `Desktop Dragon.app` 移到“应用程序”，然后打开。
+1. 从 [Release](https://github.com/MXMX0811/desktop-dragon/releases/tag/v0.1.0-alpha.3) 下载 macOS arm64 DMG 并打开磁盘映像。
+2. 将映像中的 `Desktop Dragon.app` 拖到旁边的“应用程序”快捷入口，复制完成后打开应用。
 3. 应用包不含 Developer ID 签名和 Apple 公证。若首次打开被系统阻止，确认下载来源后，按 [Apple 官方说明](https://support.apple.com/en-us/102445)，在“系统设置 → 隐私与安全”中选择“仍要打开”，再确认打开。
 
-打包应用已包含运行环境与素材，使用桌宠无需安装 Node.js 或 Python。macOS 下不显示 Dock 图标；可通过人物右键或菜单栏托盘操作、隐藏和退出。首次运行可用右键菜单审阅动作，详见[本版发布说明](docs/releases/0.1.0-alpha.2.md)。
+打包应用已包含运行环境与素材，使用桌宠无需安装 Node.js 或 Python。macOS 下不显示 Dock 图标；可通过人物右键或菜单栏托盘操作、隐藏和退出。首次运行可用右键菜单审阅动作，详见[本版发布说明](docs/releases/0.1.0-alpha.3.md)。
 
 显示真实 Codex 活动需另行安装 Node.js 22.13 或更新版本，取得并保留本仓库，在仓库根目录运行 `npm ci`，再按[钩子接入说明](desktop/codex-hooks/README.md)完成注册、信任与数据目录选择。接收器依赖仓库脚本；移动仓库或修改命令后需重新审阅信任。应用不会自动安装钩子。
 
@@ -52,6 +52,8 @@ npm start
 
 - 非休眠状态下单击人物，播放反馈并显示账户剩余额度与重置时间；气泡显示期间再点击，随机切换当前姿态的预置台词。信息停留4秒、台词停留3秒后收起，下次点击重新显示额度。休眠时点击只唤醒，唤醒动作结束后再次点击显示额度。
 - 台词气泡随文字长度收窄，超过最大行宽才自动换行。
+- 白天（06:00–18:00）递咖啡，夜晚（18:00–次日06:00）抱枕道晚安。每个时段首次空闲见面时问候一次，启动、唤醒或跨时段都按同一规则处理。工作、待确认和拖动优先；结束后继续跟随当前任务。右键“状态审阅”也可点播这两种问候。
+- 递咖啡时点击会闭眼开口笑并振翅；晚安时点击会慢慢眨眼。问候使用Q版形象，与其他姿态按既有渐变及圆云规则衔接。
 - 跟随会话状态时，待机且连续两分钟没有人物交互会自动休眠；点击或拖动重新计时，新活动到来时恢复任务动作。
 - 拖动人物到显示器外侧的左、右边缘并松手，播放飞行后扒边；向屏幕内拖回恢复当前活动。
 - 子代理小云在拖动时收起；放下后，仍有子代理活动时重新出现。
@@ -92,7 +94,7 @@ npm run package
 
 GitHub Actions 在每次推送和拉取请求运行同一组 Node 测试。打包使用锁定版本的 Electron Packager，在 `out/` 生成 macOS 应用。
 
-发布时同步`package.json`与锁文件版本，准备`docs/releases/{版本号}.md`，提交后推送对应的`v{版本号}`标签。发布工作流在macOS arm64完成测试、打包与上传，再公开Release；带`alpha`、`beta`等后缀的版本标记为预发布。
+发布时同步`package.json`与锁文件版本，准备`docs/releases/{版本号}.md`，提交后推送对应的`v{版本号}`标签。发布工作流在macOS arm64完成测试、应用打包与DMG制作，上传DMG后公开Release；DMG内含应用和“应用程序”快捷入口。带`alpha`、`beta`等后缀的版本标记为预发布。
 
 ## 模块与设计记录
 

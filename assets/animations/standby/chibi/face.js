@@ -1,3 +1,5 @@
+import {createPart} from './parts.js';
+
 const eyes = [
     { left: 432, right: 580, upper: [[432, 590], [450, 577], [470, 562], [490, 553], [510, 550], [530, 550], [550, 554], [568, 561], [580, 565]],
         closed: [[465, 615], [480, 615], [500, 611], [520, 605], [540, 596], [560, 590], [575, 592]],
@@ -19,18 +21,20 @@ function at(a, x) {
     return a[a.length - 1][1];
 }
 export function makeLashes(open, closed) {
-    const cut = (image, paths) => paths.map(path => {
-        const c = document.createElement('canvas');
-        c.width = c.height = 1254;
-        const ctx = c.getContext('2d');
-        ctx.clip(new Path2D(path));
-        ctx.drawImage(image, 0, 0);
-        const pixels = ctx.getImageData(0, 0, 1254, 1254), a = pixels.data;
+    const cut = (image, paths) => paths.map((path, index) => {
+        const eye = eyes[index];
+        // Preserve the complete 430..650 sampling strip used by moving lashes.
+        const part = createPart([eye.left - 5, 430, eye.right - eye.left + 10, 220], ctx => {
+            ctx.clip(new Path2D(path));
+            ctx.drawImage(image, 0, 0);
+        });
+        const ctx = part.canvas.getContext('2d');
+        const pixels = ctx.getImageData(0, 0, part.canvas.width, part.canvas.height), a = pixels.data;
         for (let i = 0; i < a.length; i += 4)
             if (a[i] > 170 || a[i + 1] > 140 || a[i + 2] > 170)
                 a[i + 3] = 0;
         ctx.putImageData(pixels, 0, 0);
-        return c;
+        return part;
     });
     return { open: cut(open, eyes.map(e => e.lash)), closed: cut(closed, eyes.map(e => e.closedLash)) };
 }
@@ -57,9 +61,9 @@ export function drawFace(ctx, awake, lashes, p) {
         for (let x = eye.left - 5; x < eye.right + 5; x++) {
             const base = at(eye.upper, x), y = upper(x);
             ctx.globalAlpha = blend;
-            ctx.drawImage(lashes.open[index], x, 430, 1, 220, x, y + (430 - base) * thickness, 1.05, 220 * thickness);
+            ctx.drawImage(lashes.open[index].canvas, x - lashes.open[index].x, 430 - lashes.open[index].y, 1, 220, x, y + (430 - base) * thickness, 1.05, 220 * thickness);
             ctx.globalAlpha = 1 - blend;
-            ctx.drawImage(lashes.closed[index], x, 430, 1, 220, x, 430 + y - at(eye.closed, x), 1.05, 220);
+            ctx.drawImage(lashes.closed[index].canvas, x - lashes.closed[index].x, 430 - lashes.closed[index].y, 1, 220, x, 430 + y - at(eye.closed, x), 1.05, 220);
         }
         ctx.restore();
     });

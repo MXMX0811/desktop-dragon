@@ -1,3 +1,4 @@
+import {createPart, drawPart} from './parts.js';
 import {Delaunator} from '../../../vendor/delaunator.js';
 import { curveValue } from './motion.js';
 // Matching outlines from the five full drawings, clockwise from the shoulder.
@@ -55,15 +56,14 @@ function contour(ctx, pts) {
 // Both layers share the same mesh so their seam stays attached throughout.
 const cuffBoundary = 'M 0 766 L 564 766 Q 567 758 572 755 L 577 755 Q 581 748 586 746 L 590 745 Q 595 740 604 741 L 614 742 Q 617 744 622 744 Q 627 746 632 751 L 1254 751';
 export function makeSleeveTexture(image, part) {
-    const c = document.createElement('canvas');
-    c.width = c.height = 1254;
-    const ctx = c.getContext('2d');
-    contour(ctx, outlines[0]);
-    ctx.clip();
-    const end = part === 'shoulder' ? 'L 1254 0 L 0 0 Z' : 'L 1254 1254 L 0 1254 Z';
-    ctx.clip(new Path2D(cuffBoundary + end));
-    ctx.drawImage(image, 0, 0);
-    return c;
+    const bounds = part === 'shoulder' ? [472, 670, 250, 105] : [472, 736, 250, 246];
+    return createPart(bounds, ctx => {
+        contour(ctx, outlines[0]);
+        ctx.clip();
+        const end = part === 'shoulder' ? 'L 1254 0 L 0 0 Z' : 'L 1254 1254 L 0 1254 Z';
+        ctx.clip(new Path2D(cuffBoundary + end));
+        ctx.drawImage(image, 0, 0);
+    });
 }
 function drawTriangle(ctx, image, s, d) {
     const [s0, s1, s2] = s, [d0, d1, d2] = d;
@@ -82,7 +82,7 @@ function drawTriangle(ctx, image, s, d) {
     ctx.closePath();
     ctx.clip();
     ctx.transform(a, b, c, e, d0[0] - a * s0[0] - c * s0[1], d0[1] - b * s0[0] - e * s0[1]);
-    ctx.drawImage(image, 0, 0);
+    drawPart(ctx, image);
     ctx.restore();
 }
 export function drawSleeve(ctx, image, p, outline) {
@@ -125,12 +125,10 @@ export function sleeveFoldCount(p) {
 }
 // The knot and tassels keep their original contours instead of stretching with cloth.
 export function makeOrnament(image) {
-    const c = document.createElement('canvas');
-    c.width = c.height = 1254;
-    const ctx = c.getContext('2d');
-    ctx.clip(new Path2D('M 552 778 Q 550 764 567 762 Q 580 759 588 772 Q 605 771 608 785 Q 612 806 596 820 Q 591 832 580 836 Q 587 843 580 848 L 589 900 L 588 908 Q 570 914 551 907 L 546 902 Q 530 905 514 893 L 536 851 Q 531 844 540 836 Q 526 829 531 815 Q 528 797 539 787 Q 539 778 552 778 Z'));
-    ctx.drawImage(image, 0, 0);
-    return c;
+    return createPart([508, 754, 110, 166], ctx => {
+        ctx.clip(new Path2D('M 552 778 Q 550 764 567 762 Q 580 759 588 772 Q 605 771 608 785 Q 612 806 596 820 Q 591 832 580 836 Q 587 843 580 848 L 589 900 L 588 908 Q 570 914 551 907 L 546 902 Q 530 905 514 893 L 536 851 Q 531 844 540 836 Q 526 829 531 815 Q 528 797 539 787 Q 539 778 552 778 Z'));
+        ctx.drawImage(image, 0, 0);
+    });
 }
 export function drawOrnament(ctx, image, p) {
     const x = curveValue(details.map(v => v[0][0]), p.lift), y = curveValue(details.map(v => v[0][1]), p.lift);
@@ -138,6 +136,6 @@ export function drawOrnament(ctx, image, p) {
     ctx.translate(x, y);
     ctx.rotate(-.10 * p.lift + .012 * Math.sin(Math.PI * p.lift));
     ctx.translate(-568, -803);
-    ctx.drawImage(image, 0, 0);
+    drawPart(ctx, image);
     ctx.restore();
 }

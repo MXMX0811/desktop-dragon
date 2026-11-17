@@ -352,8 +352,45 @@ test('dragging out of a peek restores a task that changed while clinging',async 
  assert.equal(peek.touches,0);assert.deepEqual(h.clicks,[]);assert.equal(peek.destroyed,1);
 });
 
+test('the task is released only after the edge portrait finishes appearing',async t=>{
+ const h=await harness(t),retained=h.presenter.current;
+ h.down();h.move(590);await flush();h.up(590);await flush();
+ const fade=deferred();h.interaction.fade.play=()=>fade.promise;
+ h.interaction.current.ended();await flush();
+ assert.equal(h.interaction.current.kind,'peek');assert.equal(h.presenter.current,retained);
+ assert.equal(h.events.filter(e=>e==='destroy-task:work:chibi').length,0);
+ fade.resolve();await flush();
+ assert.equal(h.presenter.current,null);
+ assert.equal(h.events.filter(e=>e==='destroy-task:work:chibi').length,1);
+ assert.deepEqual(h.errors,[]);
+});
+
+test('return from an unloaded edge keeps the drag visible while the latest task loads',async t=>{
+ const load=deferred(),h=await harness(t,{flightPlay:ended=>ended(),taskLoad:()=>load.promise});
+ h.down();h.move(590);await flush();h.up(590);await flush();
+ assert.equal(h.presenter.current,null);
+ h.down(590);h.move(350);await flush();const drag=h.interaction.current;
+ h.up(350);await flush();
+ assert.equal(h.interaction.current,drag);assert.equal(drag.element.style.opacity,'1');
+ h.down(350);h.up(350);assert.deepEqual(h.clicks,[]);
+ const latest=view('reading','normal',{waiting:true,waitingPose:true});h.interaction.setTarget(latest);
+ load.resolve();await flush();
+ assert.equal(h.presenter.current.view,latest);assert.equal(h.presenter.current.animation.waiting,true);
+ assert.equal(h.interaction.active,false);assert.deepEqual(h.errors,[]);
+});
+
+test('reset from an unloaded edge recreates the current task at the requested point',async t=>{
+ const h=await harness(t,{flightPlay:ended=>ended()});
+ h.down();h.move(590);await flush();h.up(590);await flush();
+ const peek=h.interaction.current;assert.equal(h.presenter.current,null);
+ h.interaction.resetPosition({x:300,y:230});await flush();
+ assert.equal(h.presenter.current.key,'chibi:work');assert.deepEqual(h.interaction.eye(),{x:300,y:230});
+ assert.equal(h.interaction.active,false);assert.equal(h.scenes.find(s=>s.element===peek.element).destroyed,1);
+ assert.deepEqual(h.errors,[]);
+});
+
 for(const side of ['left','right']){
- test(`${side} peek clicks animate the visible portrait without touching the retained task`,async t=>{
+ test(`${side} peek clicks animate the visible portrait after releasing the task`,async t=>{
   const h=await harness(t,{flightPlay:ended=>ended()}),x=side==='left'?10:590;
   h.down();h.move(x);await flush();h.up(x);await flush();
   const entry=h.interaction.current,peek=h.scenes.find(scene=>scene.kind==='peek'),target=h.interaction.target;
@@ -363,7 +400,7 @@ for(const side of ['left','right']){
   assert.equal(peek.touches,3);assert.deepEqual(h.clicks,[]);assert.equal(h.interaction.clickCount,0);
   assert.deepEqual(h.peekClicks,[1,1,1]);
   assert.equal(h.interaction.current,entry);assert.equal(h.interaction.target,target);
-  assert.equal(h.presenter.current.animation.visible,false);assert.equal(h.presenter.current.animation.suspended,true);
+  assert.equal(h.presenter.current,null);
   assert.deepEqual(h.errors,[]);
  });
 }
@@ -501,14 +538,14 @@ test('a resized desktop keeps the pet at the edge until the user drags it back t
  const h=await harness(t,{flightPlay:ended=>ended()});
  let area={x:0,y:0,width:600,height:460};h.interaction.workAreaAt=()=>area;
  h.down();h.move(590);await flush();h.up(590);await flush();
- const peek=h.interaction.current,retained=h.presenter.current;
+ const peek=h.interaction.current;
  area={x:0,y:0,width:800,height:500};
  h.interaction.setTarget(view('thinking'));h.interaction.updateLayout({x:0,y:0});await flush();
  h.interaction.setTarget(view('standby'));h.interaction.updateLayout({x:0,y:0});await flush();
  const latest=view('reading','normal',{waiting:true,waitingPose:true});h.interaction.setTarget(latest);await flush();
  assert.equal(h.interaction.current,peek);assert.equal(h.interaction.mode,'peek');
  assert.deepEqual(peek.eye(),{x:800,y:200});assert.deepEqual(peek.area,area);
- assert.equal(h.presenter.current,retained);assert.equal(retained.animation.visible,false);
+ assert.equal(h.presenter.current,null);
  assert.equal(h.events.filter(event=>event==='play-flight').length,1);
  h.down(800);h.move(350);await flush();h.up(350);await flush();
  assert.equal(h.interaction.active,false);assert.equal(h.presenter.current.view,latest);
@@ -572,7 +609,7 @@ test('a peek loading across a layout change uses the latest edge without restori
  h.interaction.setTarget(view('thinking'));load.resolve();await flush();
  assert.equal(h.interaction.current.kind,'peek');assert.equal(h.interaction.mode,'peek');
  assert.deepEqual(h.interaction.current.eye(),{x:740,y:220});
- assert.deepEqual(h.interaction.current.area,area);assert.equal(h.presenter.current.animation.visible,false);
+ assert.deepEqual(h.interaction.current.area,area);assert.equal(h.presenter.current,null);
  assert.equal(h.events.filter(event=>event==='play-flight').length,1);assert.deepEqual(h.errors,[]);
 });
 

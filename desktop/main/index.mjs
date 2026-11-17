@@ -56,6 +56,8 @@ if(!app.requestSingleInstanceLock()){app.quit();}else{
    {label:'待机',click:()=>action({type:'scene',scene:'standby'})},
    {label:'休眠',click:()=>action({type:'scene',scene:'standby',sleeping:true})},
    {label:'思考',click:()=>action({type:'scene',scene:'thinking'})},
+   {label:'白天 · 递咖啡',click:()=>action({type:'scene',scene:'coffee'})},
+   {label:'晚上 · 晚安',click:()=>action({type:'scene',scene:'goodnight'})},
    ...['reading','work','drawing'].map((scene,i)=>({label:['阅读','工作','绘图'][i],submenu:[
     {label:'进行中',click:()=>action({type:'scene',scene})},
     {label:'等待确认',click:()=>action({type:'scene',scene,waiting:true})},

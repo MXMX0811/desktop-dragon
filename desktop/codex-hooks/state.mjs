@@ -14,8 +14,8 @@ function closeTurn(turn, state) {
 }
 
 function turnView(turn) {
-  const tools = [...turn.tools.values()];
-  const agents = [...turn.agents.values()];
+  const tools = [...turn.tools.values()].map(tool => ({...tool}));
+  const agents = [...turn.agents.values()].map(agent => ({...agent}));
   const activeTools = tools.filter(tool => tool.state === 'running').length;
   const activeAgents = agents.filter(agent => agent.state === 'running').length;
   let state = turn.lifecycle;
@@ -29,7 +29,7 @@ function turnView(turn) {
     turn_id: turn.turn_id, agent_id:turn.agent_id, state, last_event: turn.last_event,
     last_received_at: turn.last_received_at, active_tools: activeTools,
     active_agents: activeAgents, tools, agents,
-    permission_requests: turn.permission_requests,
+    permission_requests: turn.permission_requests.map(request => ({...request})),
     compacting: turn.compacting,
     stop_hook_active: turn.stop_hook_active,
   };
@@ -65,17 +65,16 @@ function observeInput(session, event) {
 }
 
 /**
- * Rebuild from metadata events. received_at is observer time, not tool duration.
+ * Apply ordered metadata events without retaining the original event objects.
+ * received_at is observer time, not tool duration.
  * Full IDs are essential: a tool without tool_use_id remains an unpaired event.
  */
-export function reduceEvents(events) {
+export function createEventReducer() {
   const sessions = new Map(), seen = new Set();
-  const ordered = [...events].sort((a, b) =>
-    String(a.received_at ?? '').localeCompare(String(b.received_at ?? '')));
   let ignored = 0;
-  for (const event of ordered) {
-    if (!event.session_id || !event.hook_event_name) { ignored++; continue; }
-    if (event.event_id && seen.has(event.event_id)) continue;
+  const apply = event => {
+    if (!event.session_id || !event.hook_event_name) { ignored++; return; }
+    if (event.event_id && seen.has(event.event_id)) return;
     if (event.event_id) seen.add(event.event_id);
 
     const name = event.hook_event_name;
@@ -92,13 +91,16 @@ export function reduceEvents(events) {
     if (name === 'SessionStart') {
       session.closed = false;
       session.source = event.source;
+      // Ephemeral forks have no persisted transcript. Keep this session fact
+      // separate from activity; the desktop decides which sessions to display.
+      session.transient_fork = event.source === 'fork' && event.has_transcript_path === false;
     }
     if (name === 'SessionEnd') {
       session.closed = true;
       session.compacting = false;
       session.input_requests.clear();
       for (const turn of session.turns.values()) closeTurn(turn, 'session_ended');
-      continue;
+      return;
     }
     // An accepted async question outlives its tool call and the prompting turn.
     // Only the host's exact question reply resolves it; Stop/Interrupt do not.
@@ -110,7 +112,7 @@ export function reduceEvents(events) {
       if (['PreToolUse','PostToolUse','PermissionRequest','SubagentStart','SubagentStop'].includes(name)) {
         session.unpaired_events++;
       }
-      continue;
+      return;
     }
 
     let turn = session.turns.get(event.turn_id);
@@ -138,15 +140,15 @@ export function reduceEvents(events) {
     if (name === 'Interrupt') {
       if (session.current_turn_id === event.turn_id) session.compacting = false;
       closeTurn(turn, 'interrupted');
-      continue;
+      return;
     }
     if (name === 'Stop') {
       if (session.current_turn_id === event.turn_id) session.compacting = false;
       if (!CLOSED.has(turn.lifecycle)) closeTurn(turn, 'stop_observed');
       turn.stop_hook_active = event.stop_hook_active;
-      continue;
+      return;
     }
-    if (CLOSED.has(turn.lifecycle) || session.closed) continue;
+    if (CLOSED.has(turn.lifecycle) || session.closed) return;
 
     if (name === 'PreCompact') turn.compacting = true;
     if (name === 'PostCompact') turn.compacting = false;
@@ -156,7 +158,7 @@ export function reduceEvents(events) {
       if (turn.lifecycle !== 'stop_observed') turn.lifecycle = 'activity_observed';
     }
     if (name === 'PreToolUse' || name === 'PostToolUse') {
-      if (!event.tool_use_id) { session.unpaired_events++; continue; }
+      if (!event.tool_use_id) { session.unpaired_events++; return; }
       let tool = turn.tools.get(event.tool_use_id);
       if (!tool) {
         tool = {tool_use_id:event.tool_use_id, tool_name:event.tool_name,
@@ -176,7 +178,7 @@ export function reduceEvents(events) {
       }
     }
     if (name === 'SubagentStart' || name === 'SubagentStop') {
-      if (!event.agent_id) { session.unpaired_events++; continue; }
+      if (!event.agent_id) { session.unpaired_events++; return; }
       let agent = turn.agents.get(event.agent_id);
       if (!agent) {
         agent = {agent_id:event.agent_id, agent_type:event.agent_type,
@@ -195,45 +197,63 @@ export function reduceEvents(events) {
         if (turn.agent_id === event.agent_id) closeTurn(turn, 'stop_observed');
       }
     }
-  }
+  };
 
-  const views = [...sessions.values()].map(session => {
-    const turns = [...session.turns.values()].map(turnView);
-    const current = turns.find(turn => turn.turn_id === session.current_turn_id);
-    const activeTurns = turns.filter(turn => turn === current || (turn.agent_id && turn.active_agents > 0));
-    const activeAgents = activeTurns.reduce((sum, turn) => sum + turn.active_agents, 0);
-    const tools = activeTurns.flatMap(turn => turn.tools.filter(tool => tool.state === 'running'));
-    const pendingInputs = [...session.input_requests.values()]
-      .filter(request => request.accepted && request.question_count > 0)
-      .map(request => ({
-        tool_use_id:request.tool_use_id, turn_id:request.turn_id,
-        pending_count:request.question_count - [...request.answered].filter(index => index < request.question_count).length,
-        requested_at:request.started_at ?? request.accepted_at,
-      }))
-      .filter(request => request.pending_count > 0);
-    const state = session.closed ? 'session_ended' : session.compacting || current?.compacting ? 'compacting'
-      : current?.state === 'permission_requested' ? 'permission_requested'
-      : tools.length ? 'tool_running'
-      : activeAgents ? 'agent_running' : current?.state ?? 'unknown';
-    return {
-      session_id:session.session_id, model:session.model, source:session.source,
-      last_event:session.last_event, last_received_at:session.last_received_at,
-      current_turn_id:session.current_turn_id,
-      state, active_tools:tools.length, active_agents:activeAgents, tools,
-      pending_inputs:pendingInputs,
-      pending_input_count:pendingInputs.reduce((sum, request) => sum + request.pending_count, 0),
-      unpaired_events:session.unpaired_events, turns,
-    };
-  });
-  return {sessions:views, summary:{
-    sessions:views.length,
-    activity_observed_sessions:views.filter(s => ['activity_observed','tool_running','agent_running','permission_requested','compacting'].includes(s.state)).length,
-    active_tools:views.reduce((n, session) => n+session.active_tools, 0),
-    active_agents:views.reduce((n, session) => n+session.active_agents, 0),
-    permission_requests_observed:views.reduce((n, s) => n+s.turns.reduce((m, t) => m+t.permission_requests.length, 0), 0),
-    stop_observed_sessions:views.filter(s => s.state === 'stop_observed').length,
-    unknown_sessions:views.filter(s => s.state === 'unknown').length,
-    unpaired_events:views.reduce((n, s) => n+s.unpaired_events, 0),
-    ignored_events:ignored,
-  }};
+  const snapshot = () => {
+    const views = [...sessions.values()].map(session => {
+      const turns = [...session.turns.values()].map(turnView);
+      const current = turns.find(turn => turn.turn_id === session.current_turn_id);
+      const activeTurns = turns.filter(turn => turn === current || (turn.agent_id && turn.active_agents > 0));
+      const activeAgents = activeTurns.reduce((sum, turn) => sum + turn.active_agents, 0);
+      const tools = activeTurns.flatMap(turn => turn.tools.filter(tool => tool.state === 'running'));
+      const pendingInputs = [...session.input_requests.values()]
+        .filter(request => request.accepted && request.question_count > 0)
+        .map(request => ({
+          tool_use_id:request.tool_use_id, turn_id:request.turn_id,
+          pending_count:request.question_count - [...request.answered].filter(index => index < request.question_count).length,
+          requested_at:request.started_at ?? request.accepted_at,
+        }))
+        .filter(request => request.pending_count > 0);
+      const state = session.closed ? 'session_ended' : session.compacting || current?.compacting ? 'compacting'
+        : current?.state === 'permission_requested' ? 'permission_requested'
+        : tools.length ? 'tool_running'
+        : activeAgents ? 'agent_running' : current?.state ?? 'unknown';
+      return {
+        session_id:session.session_id, model:session.model, source:session.source,
+        transient_fork:session.transient_fork,
+        last_event:session.last_event, last_received_at:session.last_received_at,
+        current_turn_id:session.current_turn_id,
+        state, active_tools:tools.length, active_agents:activeAgents, tools,
+        pending_inputs:pendingInputs,
+        pending_input_count:pendingInputs.reduce((sum, request) => sum + request.pending_count, 0),
+        unpaired_events:session.unpaired_events, turns,
+      };
+    });
+    return {sessions:views, summary:{
+      sessions:views.length,
+      activity_observed_sessions:views.filter(s => ['activity_observed','tool_running','agent_running','permission_requested','compacting'].includes(s.state)).length,
+      active_tools:views.reduce((n, session) => n+session.active_tools, 0),
+      active_agents:views.reduce((n, session) => n+session.active_agents, 0),
+      permission_requests_observed:views.reduce((n, s) => n+s.turns.reduce((m, t) => m+t.permission_requests.length, 0), 0),
+      stop_observed_sessions:views.filter(s => s.state === 'stop_observed').length,
+      unknown_sessions:views.filter(s => s.state === 'unknown').length,
+      unpaired_events:views.reduce((n, s) => n+s.unpaired_events, 0),
+      ignored_events:ignored,
+    }};
+  };
+  return {apply, snapshot, retainedCounts:() => ({
+    events:0, eventIds:seen.size, sessions:sessions.size,
+    turns:[...sessions.values()].reduce((sum, session) => sum + session.turns.size, 0),
+    tools:[...sessions.values()].reduce((sum, session) => sum + [...session.turns.values()]
+      .reduce((count, turn) => count + turn.tools.size, 0), 0),
+  })};
+}
+
+/** Batch queries use the same event application as the live observer. */
+export function reduceEvents(events) {
+  const reducer = createEventReducer();
+  const ordered = [...events].sort((a, b) =>
+    String(a.received_at ?? '').localeCompare(String(b.received_at ?? '')));
+  ordered.forEach(reducer.apply);
+  return reducer.snapshot();
 }
